@@ -2,11 +2,11 @@ Unimelb Subject Discord Bot
 ===
 
 - [ ] Grant user the "subject:student" role when they verify their enrolled student email
-    - [ ] Bot sends a pm upon user reacting to a message
-    - [ ] Bot accepts user input {userid} e.g. amcclernon 
+    - [x] Bot sends a pm upon user reacting to a message
+    - [x] Bot accepts user input {userid} e.g. amcclernon 
     - [ ] Bot verifies {userid} as enrolled in a subject
-    - [ ] Bot emails user input {userid}@student.unimelb.edu.au w/ verification code {verifycode}
-    - [ ] Bot accepts user input {verifycode} and verifies correctness
+    - [x] Bot emails user input {userid}@student.unimelb.edu.au w/ verification code {verifycode}
+    - [x] Bot accepts user input {verifycode} and verifies correctness
     - [ ] Bot applies correct subject role to user + student role
 
 - [ ] Track Canvas Discussion Forum
@@ -30,4 +30,4 @@ Unimelb Subject Discord Bot
     - [ ] send new msg with diff if exists
 
 - [ ] Announce reminder before events
-    - [ ] either user defined events or check the canvas calendera
+    - [ ] either user defined events or check the canvas calender
