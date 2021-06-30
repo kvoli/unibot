@@ -1,22 +1,16 @@
 'use strict';
 
 require('dotenv').config();
-const canvas = require('./canvas');
+const canvas = require('node-canvas-api');
 const redis = require('./redis');
 
 const run = (courseId) => {
-    var ret;
-    //if (!redis.publisher.get("LAST_RUN", (err, res) => !err ? ret = res : console.error)) {
-    //    ret = Date.now().toString();
-    //}
-
-    //redis.publisher.set("LAST_RUN", Date.now().toString());
-
+    canvas.tapped(courseId);
     canvas.getStudenList(courseId)
         .then(res => res.map(student => redis.publisher.sadd(`${courseId}:enrolled`, student.user.login_id.toString())))
         .catch(console.error);
 
-    canvas.getModules(courseId)
+    canvas.getSections
         .then(res => res.map(module =>
             module.items.map(moduleItem => {
                 redis.publisher.hexists(`modules`, `${moduleItem.id}`, (err, reply) => {

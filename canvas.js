@@ -6,31 +6,38 @@ var parse = require('parse-link-header');
 
 const CANVAS_TOKEN = process.env.CANVAS_TOKEN;
 const CANVAS_URL = 'canvas.lms.unimelb.edu.au'
+const PAGINATION_LIMIT = "200"
 
 const ax = axios.default.create({
     baseURL: 'https://' + CANVAS_URL + '/api/v1',
-    headers: {'Authorization': `Bearer ${CANVAS_TOKEN}`},
+    headers: {
+        'Authorization': `Bearer ${CANVAS_TOKEN}`,
+        'per_page': `${PAGINATION_LIMIT}`,
+    },
 });
 
+function customizer(objValue, srcValue) {
+    if (_.isArray(objValue)) {
+        return objValue.concat(srcValue);
+    }
+}
+
 async function ExecuteRequest(reqOptions, data) {
-
-    data = data || [];
-
+    var data = data || [];
     await ax.request(reqOptions).then(response => {
 
         // We merge the returned data with the existing data
         _.concat(data, response.data);
+
         const links = parse(response.headers.link)
 
         // We check if there is more paginated data to be obtained
         if (links.next) {
-
             // If nextPageUrl is not null, we have more data to grab
-            return ExecuteRequest({url: links.next.url, method: reqOptions.method}, data);
+            return [ExecuteRequest({url: links.next.url, method: reqOptions.method}, data), ...data];
         }
+        return data;
     });
-
-    return data;
 }
 
 // Track Enrolled Student List
@@ -42,6 +49,9 @@ const getStudenList = (courseId) =>
             type: ['StudentEnrollment']
         }
     });
+
+const tapped = (courseId) => _.tap(getStudenList(courseId), (res) => res.then(t => console.log(t)))
+
 
 // Track Announcements 
 const getAnnouncements = (courseId, from) =>
@@ -89,6 +99,7 @@ const getModuleItems = (courseId, moduleId) =>
         method: 'get',
     });
 
+module.exports.tapped = tapped;
 module.exports.getStudenList = getStudenList;
 module.exports.getAnnouncements = getAnnouncements;
 module.exports.getDiscussionTopics = getDiscussionTopics;
