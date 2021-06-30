@@ -28,6 +28,3 @@ Unimelb Subject Discord Bot
     - [ ] Authenticate w/ api on canvas
     - [ ] Diff whitelisted modules
     - [ ] send new msg with diff if exists
-
-- [ ] Announce reminder before events
-    - [ ] either user defined events or check the canvas calender
