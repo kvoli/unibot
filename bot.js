@@ -1,7 +1,4 @@
 'use strict';
-/**
- * A bot that welcomes new guild members when they join
- */
 
 // Import the discord.js module
 require('dotenv').config();

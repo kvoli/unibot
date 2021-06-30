@@ -1,10 +1,27 @@
 'use strict';
 
 const redis = require("redis");
-const client = redis.createClient();
+const subscriber = redis.createClient();
+const publisher = redis.createClient();
 
-client.on("error", function (error) {
+const DISCUSSIONS_CHANNEL = 'DISCUSSIONS_CHANNEL'
+const MODULES_CHANNEL = 'MODULES_CHANNEL'
+const ANNOUNCEMENTS_CHANNEL = 'ANNOUNCEMENTS_CHANNEL'
+
+subscriber.on("error", function (error) {
   console.error(error);
 });
 
+publisher.on("error", function (error) {
+  console.error(error);
+});
 
+subscriber.subscribe(DISCUSSIONS_CHANNEL)
+subscriber.subscribe(MODULES_CHANNEL)
+subscriber.subscribe(ANNOUNCEMENTS_CHANNEL)
+
+module.exports.subscriber = subscriber;
+module.exports.publisher = publisher;
+module.exports.DISCUSSIONS_CHANNEL = DISCUSSIONS_CHANNEL;
+module.exports.MODULES_CHANNEL = MODULES_CHANNEL;
+module.exports.ANNOUNCEMENTS_CHANNEL = ANNOUNCEMENTS_CHANNEL;
