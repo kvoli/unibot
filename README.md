@@ -28,6 +28,13 @@
     -   [x] Update state
 
 -   [x] Track Module Changes
+
     -   [x] Authenticate w/ api on canvas
     -   [x] Diff whitelisted modules
     -   [x] send new msg with diff if exists
+
+-   [ ] Staging
+
+    -   [ ] Refactor and sanitize
+    -   [ ] Manage Deps
+    -   [ ] Dockerfile
