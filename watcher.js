@@ -1,63 +1,122 @@
-'use strict';
+'use strict'
 
-require('dotenv').config();
-const canvas = require('node-canvas-api');
-const redis = require('./redis');
+const { noop } = require('lodash')
+const {
+  getEnrollmentsInCourse,
+  getModules,
+  getOptions,
+  getDiscussionTopics,
+  getDiscussionTopic,
+  getFullDiscussion,
+} = require('node-canvas-api')
+const redis = require('./redis')
 
-const run = (courseId) => {
-    canvas.tapped(courseId);
-    canvas.getStudenList(courseId)
-        .then(res => res.map(student => redis.publisher.sadd(`${courseId}:enrolled`, student.user.login_id.toString())))
-        .catch(console.error);
-
-    canvas.getSections
-        .then(res => res.map(module =>
-            module.items.map(moduleItem => {
-                redis.publisher.hexists(`modules`, `${moduleItem.id}`, (err, reply) => {
-                    if (err) console.error(err);
-                    else if (reply == 0) {
-                        console.log("found new moduleItem " + moduleItem.toString());
-                        redis.publisher.hset("modules", moduleItem.id, moduleItem.toString());
-                        redis.publisher.publish(`${courseId}:${redis.MODULES_CHANNEL}`, moduleItem.toString());
-                    }
-                })
-            }
-            )
-        )
-        )
-        .catch(console.error);
-
-
-    canvas.getAnnouncements(courseId, "2021-01-01")
-        .then(res => res.map(announcement => {
-            redis.publisher.hexists(`announcements`, `${announcement.id}`, (err, reply) => {
-                if (err) console.error(err);
-                else if (reply == 0) {
-                    console.log("found new announcement topic " + announcement.toString())
-                    redis.publisher.hset("announcements", announcement.id, announcement.toString());
-                    redis.publisher.publish(`${courseId}:${redis.ANNOUNCEMENTS_CHANNEL}`, announcement.toString());
-                }
-            })
-        }
-        )
-        )
-        .catch(console.error);
-
-    canvas.getDiscussionTopics(courseId)
-        .then(res => res.map(discussion => {
-            redis.publisher.hexists(`discussions`, `${discussion.id}`, (err, reply) => {
-                if (err) console.error(err);
-                else if (reply == 0) {
-                    console.log("found new discussion topic " + discussion.toString())
-                    redis.publisher.hset(`discussions`, `${discussion.id}`, discussion.toString());
-                    redis.publisher.publish(`${courseId}:${redis.DISCUSSIONS_CHANNEL}`, discussion.toString());
-                }
-            })
-        }
-        )
-        )
-        .catch(console.error);
+const updateState = async (courseId) => {
+  const students = await getEnrollmentsInCourse(
+    courseId,
+    getOptions.users.enrollmentType.student
+  )
+  const modules = await getModules(courseId, getOptions.users.include.items)
+  const discussions = await getDiscussionDetails(courseId)
+  const announcements = await getDiscussionTopics(
+    courseId,
+    getOptions.discussion.only_announcements
+  )
+  return { students, modules, discussions, announcements }
 }
 
-run("105430");
+const getDiscussionDetails = async (courseId) => {
+  const discussions = await getDiscussionTopics(courseId)
 
+  const ret = discussions.map(async (topic) => {
+    const details = await getFullDiscussion(courseId, topic.id)
+    return { id: topic.id, topic: topic, details: details }
+  })
+
+  return await Promise.all(ret)
+}
+
+const run = async (courseId) => {
+  var { students, modules, discussions, announcements } = await updateState(
+    courseId
+  )
+  students
+    ? students.map((student) =>
+        redis.publisher.sadd(`${student.user.login_id}`, `${courseId}`)
+      )
+    : noop()
+  modules
+    ? modules.map((module) =>
+        module.items.map((moduleItem) => {
+          redis.publisher.sismember(
+            `${courseId}`,
+            moduleItem.id.toString(),
+            (err, reply) => {
+              if (!err && reply == 0) {
+                redis.publisher.hset(
+                  `${courseId}`,
+                  moduleItem.id.toString(),
+                  JSON.stringify(moduleItem)
+                )
+                redis.publisher.publish(
+                  redis.MODULES_CHANNEL(courseId),
+                  JSON.stringify(moduleItem)
+                )
+              }
+            }
+          )
+        })
+      )
+    : noop()
+  discussions
+    ? discussions.map((disc) =>
+        redis.publisher.sismember(
+          `${courseId}`,
+          disc.id.toString(),
+          (err, reply) => {
+            if (!err && reply == 0) {
+              redis.publisher.hset(
+                `${courseId}`,
+                disc.id.toString(),
+                JSON.stringify(disc)
+              )
+              redis.publisher.publish(
+                redis.DISCUSSIONS_CHANNEL(courseId),
+                JSON.stringify(disc)
+              )
+            }
+          }
+        )
+      )
+    : noop()
+
+  console.log(announcements)
+
+  announcements
+    ? announcements.map((ann) => {
+        redis.publisher.sismember(
+          `${courseId}`,
+          ann.id.toString(),
+          (err, reply) => {
+            if (!err && reply == 0) {
+              redis.publisher.hset(
+                `${courseId}`,
+                ann.id.toString(),
+                JSON.stringify(ann)
+              )
+              redis.publisher.publish(
+                redis.ANNOUNCEMENTS_CHANNEL(courseId),
+                JSON.stringify(ann)
+              )
+            }
+          }
+        )
+      })
+    : noop()
+}
+
+const courseMap = { 105430: 'comp90015' }
+
+Object.keys(courseMap).forEach((courseId) => {
+  setInterval(run, 60 * 1000, courseId)
+})
