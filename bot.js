@@ -5,10 +5,13 @@ require('dotenv').config()
 const Discord = require('discord.js')
 const { noop } = require('lodash')
 const nodemailer = require('nodemailer')
+const _ = require('lodash')
+const TurndownService = require('turndown')
 
 const redis = require('./redis')
-// Create an instance of a Discord client
 const client = new Discord.Client()
+
+const turndownService = new TurndownService()
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN.toString()
 const MAIL_ADDRESS = process.env.MAIL_ADDRESS.toString()
@@ -226,24 +229,35 @@ let updateSubjectRoles = (user) =>
 
 let unwrapChannel = (chan) => chan.split(':')
 
+redis.subscriber.subscribe(redis.DISCUSSIONS_CHANNEL('comp90015'))
+redis.subscriber.subscribe(redis.ANNOUNCEMENTS_CHANNEL('comp90015'))
+redis.subscriber.subscribe(redis.MODULES_CHANNEL('comp90015'))
+
 redis.subscriber.on('message', (channel, message) => {
-  const { course, chan } = unwrapChannel(channel)
+  const [course, chan] = unwrapChannel(channel)
 
-  const courseCat = mapCourseIdToRole(course)
+  const msg = JSON.parse(message)
+  const crs = _.toUpper(course)
 
+  console.log('recv msg course:chan =', chan, course)
   switch (chan) {
-    case 'DISCUSSIONS_CHANNEL':
-      publishDiscussion(courseCat, message)
-    case 'MODULES_CHANNEL':
-      publishModule(courseCat, message)
-    case 'ANNOUNCEMENTS_CHANNEL':
-      publishAnnouncement(courseCat, message)
-    default:
-      return
+    case 'DISCUSSIONS_CHANNEL': {
+      publishDiscussion(crs, msg)
+      break
+    }
+    case 'MODULES_CHANNEL': {
+      publishModule(crs, msg)
+      break
+    }
+    case 'ANNOUNCEMENTS_CHANNEL': {
+      publishAnnouncement(crs, msg)
+      break
+    }
   }
 })
 
 let publishAnnouncement = (course, message) => {
+  console.log('processing announcement', course)
   const msg = new Discord.MessageEmbed()
     .setAuthor(
       message.author.display_name,
@@ -254,91 +268,83 @@ let publishAnnouncement = (course, message) => {
     .setURL(message.html_url)
     .setTimestamp(message.posted_at)
     .setColor('#27408b')
-    .setDescription(message.message)
-  getCourseChannel(course, 'announcements').send(announcements)
+    .setDescription(turndownService.turndown(message.message))
+  getCourseChannel(course, 'announcements')
+    .then((chan) => {
+      console.log(msg)
+      chan.send(msg)
+    })
+    .catch(console.error)
 }
 
 let publishDiscussion = (course, message) => {
+  console.log('processing discussion', message)
   const msg = new Discord.MessageEmbed()
     .setAuthor(
       message.author.display_name,
       message.author.avatar_image_url,
       message.author.html_url
     )
-    .setTitle(message.title)
-    .setURL(message.html_url)
-    .setTimestamp(message.posted_at)
+    .setTitle(`re: ${message.topicTitle}`)
+    .setURL(message.url)
+    .setTimestamp(message.created_at)
     .setColor('#27408b')
-    .setDescription('New message ...')
-  getCourseChannel(course, 'updates').send(msg)
+    .setDescription(turndownService.turndown(message.message))
+  getCourseChannel(course, 'updates')
+    .then((chan) => {
+      console.log(msg)
+      chan.send(msg)
+    })
+    .catch(console.error)
 }
 
 let publishModule = (course, message) => {
   if (!message.published) return
-  const msg = new MessageEmbed()
-  switch (msg.type) {
+  var msg = new Discord.MessageEmbed()
+    .setAuthor(
+      'Canvas',
+      'https://cpb-ap-se2.wpmucdn.com/blogs.unimelb.edu.au/dist/6/275/files/2017/09/04_Logo_Vertical-Housed-1abdv7t.jpg'
+    )
+    .setColor('#08c96b')
+    .setURL(message.html_url)
+  switch (message.type) {
     case 'Page': {
-      msg
-        .setAuthor(
-          'Canvas',
-          'https://d2h9b02ioca40d.cloudfront.net/0.7/assets/logo-105a9.svg'
-        )
-        .setTitle('Page posted: ' + message.title)
-        .setURL(message.html_url)
-        .setColor('#08c96b')
-        .setDescription('link goto page')
+      msg.setTitle('Page posted').setDescription(message.title)
       break
     }
     case 'File': {
-      msg
-        .setAuthor(
-          'Canvas',
-          'https://d2h9b02ioca40d.cloudfront.net/0.7/assets/logo-105a9.svg'
-        )
-        .setTitle('File uploaded: ' + message.title)
-        .setURL(message.html_url)
-        .setColor('#08c96b')
-        .setColor()
-        .setDescription('link goto file')
+      msg.setTitle('File uploaded').setDescription(message.title)
       break
     }
     case 'ExternalUrl': {
       msg
-        .setAuthor(
-          'Canvas',
-          'https://d2h9b02ioca40d.cloudfront.net/0.7/assets/logo-105a9.svg'
-        )
-        .setTitle('URL Posted: ' + message.title)
+        .setTitle('Link Posted: ')
         .setURL(message.external_url)
-        .setColor('#08c96b')
-        .setDescription('link goto url')
+        .setDescription(message.title)
       break
     }
     case 'Assignment': {
-      msg
-        .setAuthor(
-          'Canvas',
-          'https://d2h9b02ioca40d.cloudfront.net/0.7/assets/logo-105a9.svg'
-        )
-        .setTitle('Assignment Posted: ' + message.title)
-        .setURL(message.html_url)
-        .setColor('#08c96b')
-        .setDescription('link goto assignment')
+      msg.setTitle('Assignment Posted').setDescription(message.title)
       break
     }
     default:
-      return
+      break
   }
-  getCourseChannel(course, 'updates').send(msg)
+  getCourseChannel(course, 'updates')
+    .then((chan) => {
+      console.log(msg)
+      chan.send(msg)
+    })
+    .catch(console.error)
 }
 
-let getCourseChannel = (course, channel) => {
+let getCourseChannel = async (course, channel) => {
+  console.log('FINDING course: ' + course + ' channel' + channel)
   const guild = await client.guilds.fetch(SERVER_ID)
-  return guild.channels.cache.find((value) => {
-    value.name === channel &&
-      value.type === 'text' &&
-      value.parent.name === course
+  const ret = guild.channels.cache.find((value) => {
+    return value.name == channel && value.parent && value.parent.name == course
   })
+  return ret
 }
 
 client.login(DISCORD_TOKEN)

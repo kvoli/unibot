@@ -16,10 +16,6 @@ publisher.on('error', function (error) {
   console.error(error)
 })
 
-subscriber.subscribe(DISCUSSIONS_CHANNEL)
-subscriber.subscribe(MODULES_CHANNEL)
-subscriber.subscribe(ANNOUNCEMENTS_CHANNEL)
-
 module.exports.subscriber = subscriber
 module.exports.publisher = publisher
 module.exports.DISCUSSIONS_CHANNEL = DISCUSSIONS_CHANNEL
