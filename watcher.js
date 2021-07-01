@@ -30,13 +30,43 @@ const getDiscussionDetails = async (courseId) => {
 
   const ret = discussions.map(async (topic) => {
     const details = await getFullDiscussion(courseId, topic.id)
-    return { id: topic.id, topic: topic, details: details }
+    return parseTopicDetail(topic, details)
   })
 
   return await Promise.all(ret)
 }
 
+const parseTopicDetail = (topic, details) => {
+  var parties = {}
+  details.participants.forEach((p) => (parties[p.id] = p))
+  return _.flatMapDeep(details.view, (post) =>
+    parseMessage(post, parties, topic.title, topic.html_url)
+  )
+}
+
+const parseMessage = (post, authors, title, url) => {
+  var ret = [
+    {
+      id: post.id,
+      created_at: post.created_at,
+      message: post.message,
+      topicTitle: title,
+      author: authors[post.user_id],
+      url: url,
+    },
+  ]
+  if (!post.replies) {
+    return ret
+  }
+
+  return _.concat(
+    ret,
+    _.flatMapDeep(post.replies, (p) => parseMessage(p, authors, title, url))
+  )
+}
+
 const run = async (courseId) => {
+  console.log('started run')
   var { students, modules, discussions, announcements } = await updateState(
     courseId
   )
@@ -59,8 +89,16 @@ const run = async (courseId) => {
                   JSON.stringify(moduleItem)
                 )
                 redis.publisher.publish(
-                  redis.MODULES_CHANNEL(courseId),
-                  JSON.stringify(moduleItem)
+                  redis.MODULES_CHANNEL(courseMap[courseId]),
+                  JSON.stringify(moduleItem),
+                  (err, reply) =>
+                    console.log(
+                      'published moduleItem on',
+                      redis.MODULES_CHANNEL(courseMap[courseId]),
+                      err,
+                      reply,
+                      JSON.stringify(moduleItem).length
+                    )
                 )
               }
             }
@@ -81,16 +119,22 @@ const run = async (courseId) => {
                 JSON.stringify(disc)
               )
               redis.publisher.publish(
-                redis.DISCUSSIONS_CHANNEL(courseId),
-                JSON.stringify(disc)
+                redis.DISCUSSIONS_CHANNEL(courseMap[courseId]),
+                JSON.stringify(disc),
+                (err, reply) =>
+                  console.log(
+                    'published discussion on ',
+                    redis.DISCUSSIONS_CHANNEL(courseMap[courseId]),
+                    err,
+                    reply,
+                    JSON.stringify(disc).length
+                  )
               )
             }
           }
         )
       )
     : noop()
-
-  console.log(announcements)
 
   announcements
     ? announcements.map((ann) => {
@@ -105,18 +149,25 @@ const run = async (courseId) => {
                 JSON.stringify(ann)
               )
               redis.publisher.publish(
-                redis.ANNOUNCEMENTS_CHANNEL(courseId),
-                JSON.stringify(ann)
+                redis.ANNOUNCEMENTS_CHANNEL(courseMap[courseId]),
+                JSON.stringify(ann),
+                (err, reply) =>
+                  console.log(
+                    'published announcement on',
+                    redis.ANNOUNCEMENTS_CHANNEL(courseMap[courseId]),
+                    err,
+                    reply,
+                    JSON.stringify(ann).length
+                  )
               )
             }
           }
         )
       })
     : noop()
+  console.log('completed run')
 }
 
 const courseMap = { 105430: 'comp90015' }
 
-Object.keys(courseMap).forEach((courseId) => {
-  setInterval(run, 60 * 1000, courseId)
-})
+setInterval(run, 20 * 1000, '105430')
