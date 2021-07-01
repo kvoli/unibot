@@ -1,30 +1,33 @@
-Unimelb Subject Discord Bot
-===
+# Unimelb Subject Discord Bot
 
-- [ ] Grant user the "subject:student" role when they verify their enrolled student email
-    - [x] Bot sends a pm upon user reacting to a message
-    - [x] Bot accepts user input {userid} e.g. amcclernon 
-    - [ ] Bot verifies {userid} as enrolled in a subject
-    - [x] Bot emails user input {userid}@student.unimelb.edu.au w/ verification code {verifycode}
-    - [x] Bot accepts user input {verifycode} and verifies correctness
-    - [ ] Bot applies correct subject role to user + student role
+-   [x] Grant user the "subject:student" role when they verify their enrolled student email
 
-- [ ] Track Canvas Discussion Forum
-    - [ ] Authenticate w/ api on canvas
-    - [ ] Download and perform a diff on comments / posts
-    - [ ] send new msg to discussion channel
+    -   [x] Bot sends a pm upon user reacting to a message
+    -   [x] Bot accepts user input {userid} e.g. amcclernon
+    -   [x] Bot verifies {userid} as enrolled in a subject
+    -   [x] Bot emails user input {userid}@student.unimelb.edu.au w/ verification code {verifycode}
+    -   [x] Bot accepts user input {verifycode} and verifies correctness
+    -   [x] Bot applies correct subject role to user + student role
 
-- [ ] Track Canvas Announcements
-    - [ ] Authenticate w/ api on canvas
-    - [ ] Diff announcements
-    - [ ] send new msg to announcements channel if diff exists
+-   [x] Track Canvas Discussion Forum
 
-- [ ] Track enrolled student list
-    - [ ] Authenticate w/ api on canvas
-    - [ ] Diff student list
-    - [ ] Update state
+    -   [x] Authenticate w/ api on canvas
+    -   [x] Download and perform a diff on comments / posts
+    -   [x] send new msg to discussion channel
 
-- [ ] Track Whitelisted Module Changes
-    - [ ] Authenticate w/ api on canvas
-    - [ ] Diff whitelisted modules
-    - [ ] send new msg with diff if exists
+-   [x] Track Canvas Announcements
+
+    -   [x] Authenticate w/ api on canvas
+    -   [x] Diff announcements
+    -   [x] send new msg to announcements channel if diff exists
+
+-   [x] Track enrolled student list
+
+    -   [x] Authenticate w/ api on canvas
+    -   [x] Diff student list
+    -   [x] Update state
+
+-   [x] Track Module Changes
+    -   [x] Authenticate w/ api on canvas
+    -   [x] Diff whitelisted modules
+    -   [x] send new msg with diff if exists
