@@ -19,3 +19,5 @@ module.exports.COURSE_ID = { 105430: 'comp90015' }
 module.exports.EMAIL_SUBJECT = 'Dist. Computing Discord Server'
 
 module.exports.EMAIL_SUFFIX = '@student.unimelb.edu.au'
+
+module.exports.CODE_PREFIX = 'dcmp@'
