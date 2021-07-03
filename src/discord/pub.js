@@ -1,3 +1,5 @@
+const { getCourseChannel } = require('disco')
+
 const publishAnnouncement = (course, message) => {
   getCourseChannel(course, 'announcements')
     .then((chan) => {

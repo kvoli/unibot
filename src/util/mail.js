@@ -5,11 +5,7 @@ const {
   MAIL_PW,
   EMAIL_SUFFIX,
   EMAIL_SUBJECT,
-  CODE_PREFIX,
 } = require('../../config')
-
-const genCode = () =>
-  CODE_PREFIX + Math.trunc(Math.random() * 1e16).toString(16)
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
