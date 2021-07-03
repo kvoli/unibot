@@ -56,7 +56,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     )
     .then((collected) => {
       const username = collected.last().toString().slice(5);
-      const code = startRego(client, user, username);
+      const code = startRego(user, username);
       return sendMail(username, code);
     })
     .then((_) => {
@@ -77,8 +77,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     })
     .catch((err) =>
       user.send(
-        "Sorry, you took too long to respond. Try re-reacting to the emoji." +
-          err
+        "Sorry, you took too long to respond. Try re-reacting to the emoji."
       )
     );
 });

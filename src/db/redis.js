@@ -1,9 +1,11 @@
 "use strict";
 
+import asyncRedis from "async-redis";
 import redis from "redis";
 
 export const subscriber = redis.createClient();
 export const publisher = redis.createClient();
+export const asyncClient = asyncRedis.createClient();
 
 export const DISCUSSIONS_CHANNEL = (courseId) =>
   `${courseId}:DISCUSSIONS_CHANNEL`;

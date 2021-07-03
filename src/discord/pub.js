@@ -1,4 +1,9 @@
 import { getCourseChannel } from "./disco.js";
+import {
+  DiscussionMessage,
+  AnnouncementMessage,
+  ModuleMessage,
+} from "./messages.js";
 
 export const publishAnnouncement = (client, course, message) => {
   getCourseChannel(client, course, "announcements")

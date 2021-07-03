@@ -30,6 +30,7 @@
     "node-canvas-api": "^1.6.9"
   },
   "dependencies": {
+    "async-redis": "^2.0.0",
     "discord.js": "^12.5.3",
     "lodash": "^4.17.21",
     "nodemailer": "^6.6.2",
