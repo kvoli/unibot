@@ -1,6 +1,6 @@
 "use strict";
 
-import { noop } from "lodash";
+import _ from "lodash";
 import {
   getEnrollmentsInCourse,
   getModules,
@@ -8,7 +8,7 @@ import {
   getDiscussionTopics,
   getFullDiscussion,
 } from "node-canvas-api";
-import redis from "../db/redis.js";
+import { publisher } from "../db/redis.js";
 
 const updateState = async (courseId) => {
   const students = await getEnrollmentsInCourse(
@@ -73,7 +73,7 @@ const run = async (courseId) => {
     ? students.map((student) =>
         redis.publisher.sadd(`${student.user.login_id}`, `${courseId}`)
       )
-    : noop();
+    : _.noop();
   modules
     ? modules.map((module) =>
         module.items.map((moduleItem) => {
@@ -104,7 +104,7 @@ const run = async (courseId) => {
           );
         })
       )
-    : noop();
+    : _.noop();
   discussions
     ? discussions.map((disc) =>
         redis.publisher.sismember(
@@ -133,7 +133,7 @@ const run = async (courseId) => {
           }
         )
       )
-    : noop();
+    : _.noop();
 
   announcements
     ? announcements.map((ann) => {
@@ -163,11 +163,11 @@ const run = async (courseId) => {
           }
         );
       })
-    : noop();
+    : _.noop();
   console.log("completed run");
 };
 
 const courseMap = { 105430: "comp90015" };
 
 // 120s interval
-setInterval(run, 120 * 1000, "105430");
+setInterval(run, 30 * 1000, "105430");
