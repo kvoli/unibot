@@ -1,28 +1,26 @@
-const nodemailer = require('nodemailer')
+import nodemailer from "nodemailer";
 
-const {
+import {
   MAIL_ADDRESS,
   MAIL_PW,
   EMAIL_SUFFIX,
   EMAIL_SUBJECT,
-} = require('../../config')
+} from "../../config.js";
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: MAIL_ADDRESS,
     pass: MAIL_PW,
   },
-})
+});
 
 const getMailOptions = (username, code) => ({
   from: MAIL_ADDRESS,
   to: `${username}${EMAIL_SUFFIX}`,
   subject: `${EMAIL_SUBJECT}`,
   text: code,
-})
+});
 
-const sendMail = (username, code) =>
-  transporter.sendMail(getMailOptions(username, code))
-
-module.exports.sendMail = sendMail
+export const sendMail = (username, code) =>
+  transporter.sendMail(getMailOptions(username, code));

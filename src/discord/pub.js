@@ -1,30 +1,26 @@
-const { getCourseChannel } = require('disco')
+import { getCourseChannel } from "./disco.js";
 
-const publishAnnouncement = (course, message) => {
-  getCourseChannel(course, 'announcements')
+export const publishAnnouncement = (client, course, message) => {
+  getCourseChannel(client, course, "announcements")
     .then((chan) => {
-      chan.send(AnnouncementMessage(message))
+      chan.send(AnnouncementMessage(message));
     })
-    .catch(console.error)
-}
+    .catch(console.error);
+};
 
-const publishDiscussion = (course, message) => {
-  getCourseChannel(course, 'updates')
+export const publishDiscussion = (client, course, message) => {
+  getCourseChannel(client, course, "updates")
     .then((chan) => {
-      chan.send(DiscussionMessage(message))
+      chan.send(DiscussionMessage(message));
     })
-    .catch(console.error)
-}
+    .catch(console.error);
+};
 
-const publishModule = (course, message) => {
-  if (!message.published) return
-  getCourseChannel(course, 'updates')
+export const publishModule = (client, course, message) => {
+  if (!message.published) return;
+  getCourseChannel(client, course, "updates")
     .then((chan) => {
-      chan.send(ModuleMessage(message))
+      chan.send(ModuleMessage(message));
     })
-    .catch(console.error)
-}
-
-module.exports.publishModule = publishModule
-module.exports.publishDiscussion = publishDiscussion
-module.exports.publishAnnouncement = publishAnnouncement
+    .catch(console.error);
+};

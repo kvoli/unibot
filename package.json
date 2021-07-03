@@ -1,0 +1,39 @@
+{
+  "name": "unibot",
+  "version": "1.0.0",
+  "description": "canvas discord bot",
+  "main": "src/bot.js",
+  "directories": {
+    "test": "tests"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "node src/bot.js",
+    "start": "node src/bot.js",
+    "gen": "node tests/testPub.js",
+    "canvas": "node src/canvas/watcher.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kvoli/unibot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kvoli/unibot/issues"
+  },
+  "homepage": "https://github.com/kvoli/unibot#readme",
+  "devDependencies": {
+    "eslint": "^7.30.0",
+    "node-canvas-api": "^1.6.9"
+  },
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "lodash": "^4.17.21",
+    "nodemailer": "^6.6.2",
+    "redis": "^3.1.2",
+    "turndown": "^7.1.1"
+  }
+}

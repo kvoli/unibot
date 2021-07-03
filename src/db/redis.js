@@ -1,23 +1,20 @@
-'use strict'
+"use strict";
 
-const redis = require('redis')
-const subscriber = redis.createClient()
-const publisher = redis.createClient()
+import redis from "redis";
 
-const DISCUSSIONS_CHANNEL = (courseId) => `${courseId}:DISCUSSIONS_CHANNEL`
-const MODULES_CHANNEL = (courseId) => `${courseId}:MODULES_CHANNEL`
-const ANNOUNCEMENTS_CHANNEL = (courseId) => `${courseId}:ANNOUNCEMENTS_CHANNEL`
+export const subscriber = redis.createClient();
+export const publisher = redis.createClient();
 
-subscriber.on('error', function (error) {
-  console.error(error)
-})
+export const DISCUSSIONS_CHANNEL = (courseId) =>
+  `${courseId}:DISCUSSIONS_CHANNEL`;
+export const MODULES_CHANNEL = (courseId) => `${courseId}:MODULES_CHANNEL`;
+export const ANNOUNCEMENTS_CHANNEL = (courseId) =>
+  `${courseId}:ANNOUNCEMENTS_CHANNEL`;
 
-publisher.on('error', function (error) {
-  console.error(error)
-})
+subscriber.on("error", function (error) {
+  console.error(error);
+});
 
-module.exports.subscriber = subscriber
-module.exports.publisher = publisher
-module.exports.DISCUSSIONS_CHANNEL = DISCUSSIONS_CHANNEL
-module.exports.MODULES_CHANNEL = MODULES_CHANNEL
-module.exports.ANNOUNCEMENTS_CHANNEL = ANNOUNCEMENTS_CHANNEL
+publisher.on("error", function (error) {
+  console.error(error);
+});
