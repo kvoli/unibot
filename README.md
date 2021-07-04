@@ -1,4 +1,26 @@
-# Unimelb Subject Discord Bot
+# Canvas Course Discord Bot
+
+```
+canvas integration for discord: validating accounts against enrollments (w/ email), discussion + announcements read-only replicas and module-change updates. 
+```
+
+### Instructions
+
+Update config.js and populate env vars in sample.env
+
+```
+cp sample.env .env
+```
+
+Install dependencies and start redis server
+
+```bash
+npm install
+docker run -d --network host redis
+npm start
+```
+
+### Todo
 
 -   [x] Grant user the "subject:student" role when they verify their enrolled student email
 
@@ -38,3 +60,4 @@
     -   [x] Refactor and sanitize
     -   [ ] Manage Deps **blocked on this** (PR)[https://github.com/ubccapico/node-canvas-api/pull/24]
     -   [x] Dockerfile
+    -   [ ] Pass all settings via env-vars for docker
