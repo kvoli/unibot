@@ -1,0 +1,14 @@
+version: '3'
+services:
+  redis-server:
+    command: redis-server --appendonly yes
+    image: 'redis'
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-volume:/data
+  unibot:
+    image: 'kvoli/unibot'
+    environment:
+      - REDIS_HOST=redis-server
+

@@ -33,8 +33,8 @@
     -   [x] Diff whitelisted modules
     -   [x] send new msg with diff if exists
 
--   [ ] Staging
+-   [x] Staging
 
-    -   [ ] Refactor and sanitize
-    -   [ ] Manage Deps
-    -   [ ] Dockerfile
+    -   [x] Refactor and sanitize
+    -   [ ] Manage Deps **blocked on this** (PR)[https://github.com/ubccapico/node-canvas-api/pull/24]
+    -   [x] Dockerfile

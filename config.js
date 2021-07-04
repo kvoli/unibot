@@ -11,6 +11,8 @@ export const MAIL_PW = process.env.MAIL_PW.toString();
 
 export const SERVER_ID = process.env.SERVER_ID.toString();
 
+export const REDIS_HOST = process.env.REDIS_HOST.toString();
+
 /* retried authentication per discord account, before banning*/
 export const MAX_RETRIES = 15;
 
