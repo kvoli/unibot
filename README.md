@@ -1,7 +1,8 @@
 # Canvas Course Discord Bot
 
 ```
-canvas integration for discord: validating accounts against enrollments (w/ email), discussion + announcements read-only replicas and module-change updates. 
+canvas integration for discord: validating accounts against enrollments (w/ email),
+discussion + announcements read-only replicas and module-change updates. 
 ```
 
 ### Instructions
