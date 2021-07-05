@@ -61,4 +61,4 @@ npm start
     -   [x] Refactor and sanitize
     -   [ ] Manage Deps **blocked on this** [PR](https://github.com/ubccapico/node-canvas-api/pull/24)
     -   [x] Dockerfile
-    -   [ ] Pass all settings via env-vars for docker
+    -   [ ] Pass all settings via env-vars for docker compose / k3s
