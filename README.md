@@ -22,7 +22,11 @@ npm start
 ```
 
 ### Todo
-
+<details>
+    <summary>Feature List Breakdown
+    </summary>
+    <p>
+        
 -   [x] Grant user the "subject:student" role when they verify their enrolled student email
 
     -   [x] Bot sends a pm upon user reacting to a message
@@ -62,3 +66,7 @@ npm start
     -   [ ] Manage Deps **blocked on this** [PR](https://github.com/ubccapico/node-canvas-api/pull/24)
     -   [x] Dockerfile
     -   [ ] Pass all settings via env-vars for docker compose / k3s
+    </p>
+</details>
+
+
