@@ -59,6 +59,6 @@ npm start
 -   [x] Staging
 
     -   [x] Refactor and sanitize
-    -   [ ] Manage Deps **blocked on this** (PR)[https://github.com/ubccapico/node-canvas-api/pull/24]
+    -   [ ] Manage Deps **blocked on this** [PR](https://github.com/ubccapico/node-canvas-api/pull/24)
     -   [x] Dockerfile
     -   [ ] Pass all settings via env-vars for docker
