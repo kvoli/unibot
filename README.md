@@ -21,6 +21,33 @@ docker run -d --network host redis
 npm start
 ```
 
+### Screenshots
+
+<details>
+    <summary>
+        Greeter
+    </summary>
+    <p>
+        ![Greeter](https://user-images.githubusercontent.com/39606633/124411629-40601580-dd90-11eb-9b8e-132b7ef592fc.png)
+    </p>
+</details> 
+
+<details>
+    <summary>
+          DM Authentication Flow
+    </summary>
+    <p>![image](https://user-images.githubusercontent.com/39606633/124411747-7c937600-dd90-11eb-9398-62e9f8c92622.png)</p>
+</details> 
+
+<details>
+    <summary>
+        Discussion Replica
+    </summary>
+    <p>
+        ![image](https://user-images.githubusercontent.com/39606633/124411915-cb411000-dd90-11eb-85c9-069bc25c5318.png)
+    </p>
+</details> 
+
 ### Todo
 <details>
     <summary>Feature List Breakdown
