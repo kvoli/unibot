@@ -10,7 +10,7 @@
   "scripts": {
     "bot": "node src/bot.js",
     "canvas": "node src/canvas/watcher.js",
-    "start": "npm run canvas && npm run bot",
+    "start": "npm run bot & npm run canvas",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
