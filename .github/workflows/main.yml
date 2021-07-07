@@ -9,7 +9,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: src/core
+        working-directory: .
     steps: 
       - name: Checkout Repository
         uses: actions/checkout@v2
