@@ -16,11 +16,23 @@ export const REDIS_HOST = process.env.REDIS_HOST.toString();
 /* retried authentication per discord account, before banning*/
 export const MAX_RETRIES = 15;
 
-/* a k:v mapping of canvas course_id to the name you wish to give the subject on discord */
-export const COURSE_ID = { 105430: "comp90015" };
-
 export const EMAIL_SUBJECT = "Dist. Computing Discord Server";
 
-export const EMAIL_SUFFIX = "@student.unimelb.edu.au";
+export const STAFF_EMAIL_SUFFIX = "@unimelb.edu.au";
+
+export const STUDENT_EMAIL_SUFFIX = "@student.unimelb.edu.au";
 
 export const CODE_PREFIX = "dcmp@";
+
+/* The number of minutes to wait between updating canvas information*/
+export const CANVAS_UPDATE_INTERVAL = 5;
+
+/* a k:v mapping of canvas course_id to the name you wish to give the subject on discord */
+export const COURSE_ID = { 102263: "comp90015", 105676: "comp90025" };
+
+/* The modules to publish announcements on */
+export const WHITELISTED_MODULE_TYPES = new Set([
+  "Page",
+  "File",
+  "ExternalUrl",
+]);

@@ -1,4 +1,5 @@
 import { getCourseChannel } from "./disco.js";
+import { WHITELISTED_MODULE_TYPES } from "../../config.js";
 import {
   DiscussionMessage,
   AnnouncementMessage,
@@ -22,7 +23,7 @@ export const publishDiscussion = (client, course, message) => {
 };
 
 export const publishModule = (client, course, message) => {
-  if (!message.published) return;
+  if (!message.published || !WHITELISTED_MODULE_TYPES.has(message.type)) return;
   getCourseChannel(client, course, "updates")
     .then((chan) => {
       chan.send(ModuleMessage(message));

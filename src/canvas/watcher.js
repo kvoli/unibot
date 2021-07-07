@@ -2,98 +2,76 @@
 
 import _ from "lodash";
 import {
-  getEnrollmentsInCourse,
-  getModules,
-  getOptions,
-  getDiscussionTopics,
-  getFullDiscussion,
-} from "node-canvas-api";
-import { publisher } from "../db/redis.js";
+  publisher,
+  DISCUSSIONS_CHANNEL,
+  ANNOUNCEMENTS_CHANNEL,
+  MODULES_CHANNEL,
+} from "../db/redis.js";
+import { getUpdates } from "./updates.js";
+import { getAnnouncements } from "./announcements.js";
+import { getMembers } from "./members.js";
+import { CANVAS_UPDATE_INTERVAL, COURSE_ID } from "../../config.js";
 
-const updateState = async (courseId) => {
-  const students = await getEnrollmentsInCourse(
-    courseId,
-    getOptions.users.enrollmentType.student
-  );
-  const modules = await getModules(courseId, getOptions.users.include.items);
-  const discussions = await getDiscussionDetails(courseId);
-  const announcements = await getDiscussionTopics(
-    courseId,
-    getOptions.discussion.only_announcements
-  );
-  return { students, modules, discussions, announcements };
-};
+const courseMap = COURSE_ID;
 
-const getDiscussionDetails = async (courseId) => {
-  const discussions = await getDiscussionTopics(courseId);
+const pubMembers = async (courseId) => {
+  const { staff, students } = await getMembers(courseId);
 
-  const ret = discussions.map(async (topic) => {
-    const details = await getFullDiscussion(courseId, topic.id);
-    return parseTopicDetail(topic, details);
-  });
-
-  return await Promise.all(ret);
-};
-
-const parseTopicDetail = (topic, details) => {
-  const parties = {};
-  details.participants.forEach((p) => (parties[p.id] = p));
-  return _.flatMapDeep(details.view, (post) =>
-    parseMessage(post, parties, topic.title, topic.html_url)
-  );
-};
-
-const parseMessage = (post, authors, title, url) => {
-  const ret = [
-    {
-      id: post.id,
-      created_at: post.created_at,
-      message: post.message,
-      topicTitle: title,
-      author: authors[post.user_id],
-      url: url,
-    },
-  ];
-  if (!post.replies) {
-    return ret;
-  }
-
-  return _.concat(
-    ret,
-    _.flatMapDeep(post.replies, (p) => parseMessage(p, authors, title, url))
-  );
-};
-
-const run = async (courseId) => {
-  console.log("started run");
-  const { students, modules, discussions, announcements } = await updateState(
-    courseId
-  );
   students
-    ? students.map((student) =>
-        redis.publisher.sadd(`${student.user.login_id}`, `${courseId}`)
+    ? students.map((student) => {
+        publisher.sadd(`${student.user.login_id}`, `${courseMap[courseId]}`);
+        publisher.sadd(`${student.user.login_id}`, `student`);
+      })
+    : _.noop();
+
+  staff
+    ? staff.map((staffMember) => {
+        publisher.sadd(
+          `${staffMember.user.login_id}`,
+          `${courseMap[courseId]}`
+        );
+        publisher.sadd(
+          `${staffMember.user.login_id}`,
+          `${courseMap[courseId]}-staff`
+        );
+        publisher.sadd(`${staffMember.user.login_id}`, `teaching`);
+      })
+    : _.noop();
+
+  students
+    ? publisher.hset(
+        `${courseMap[courseId]}`,
+        "students",
+        JSON.stringify(students)
       )
     : _.noop();
+  staff
+    ? publisher.hset(`${courseMap[courseId]}`, "staff", JSON.stringify(staff))
+    : _.noop();
+};
+
+const pubUpdates = async (courseId) => {
+  const { modules, discussions } = await getUpdates(courseId);
   modules
     ? modules.map((module) =>
         module.items.map((moduleItem) => {
-          redis.publisher.sismember(
-            `${courseId}`,
+          publisher.sismember(
+            `${courseMap[courseId]}-modules`,
             moduleItem.id.toString(),
             (err, reply) => {
               if (!err && reply == 0) {
-                redis.publisher.hset(
-                  `${courseId}`,
+                publisher.hset(
+                  `${courseMap[courseId]}-modules`,
                   moduleItem.id.toString(),
                   JSON.stringify(moduleItem)
                 );
-                redis.publisher.publish(
-                  redis.MODULES_CHANNEL(courseMap[courseId]),
+                publisher.publish(
+                  MODULES_CHANNEL(courseMap[courseId]),
                   JSON.stringify(moduleItem),
                   (err, reply) =>
                     console.log(
                       "published moduleItem on",
-                      redis.MODULES_CHANNEL(courseMap[courseId]),
+                      MODULES_CHANNEL(courseMap[courseId]),
                       err,
                       reply,
                       JSON.stringify(moduleItem).length
@@ -107,53 +85,58 @@ const run = async (courseId) => {
     : _.noop();
   discussions
     ? discussions.map((disc) =>
-        redis.publisher.sismember(
-          `${courseId}`,
-          disc.id.toString(),
-          (err, reply) => {
-            if (!err && reply == 0) {
-              redis.publisher.hset(
-                `${courseId}`,
-                disc.id.toString(),
-                JSON.stringify(disc)
-              );
-              redis.publisher.publish(
-                redis.DISCUSSIONS_CHANNEL(courseMap[courseId]),
-                JSON.stringify(disc),
-                (err, reply) =>
-                  console.log(
-                    "published discussion on ",
-                    redis.DISCUSSIONS_CHANNEL(courseMap[courseId]),
-                    err,
-                    reply,
-                    JSON.stringify(disc).length
-                  )
-              );
+        disc.map((post) =>
+          publisher.sismember(
+            `${courseMap[courseId]}-posts`,
+            post.id.toString(),
+            (err, reply) => {
+              if (!err && reply == 0) {
+                publisher.hset(
+                  `${courseMap[courseId]}-posts`,
+                  post.id.toString(),
+                  JSON.stringify(post)
+                );
+                publisher.publish(
+                  DISCUSSIONS_CHANNEL(courseMap[courseId]),
+                  JSON.stringify(post),
+                  (err, reply) =>
+                    console.log(
+                      "published discussion on ",
+                      DISCUSSIONS_CHANNEL(courseMap[courseId]),
+                      err,
+                      reply,
+                      JSON.stringify(post).length
+                    )
+                );
+              }
             }
-          }
+          )
         )
       )
     : _.noop();
+};
 
+const pubAnnouncement = async (courseId) => {
+  const { announcements } = await getAnnouncements(courseId);
   announcements
     ? announcements.map((ann) => {
-        redis.publisher.sismember(
-          `${courseId}`,
+        publisher.sismember(
+          `${courseId}-announcements`,
           ann.id.toString(),
           (err, reply) => {
             if (!err && reply == 0) {
-              redis.publisher.hset(
-                `${courseId}`,
+              publisher.hset(
+                `${courseId}-announcements`,
                 ann.id.toString(),
                 JSON.stringify(ann)
               );
-              redis.publisher.publish(
-                redis.ANNOUNCEMENTS_CHANNEL(courseMap[courseId]),
+              publisher.publish(
+                ANNOUNCEMENTS_CHANNEL(courseMap[courseId]),
                 JSON.stringify(ann),
                 (err, reply) =>
                   console.log(
                     "published announcement on",
-                    redis.ANNOUNCEMENTS_CHANNEL(courseMap[courseId]),
+                    ANNOUNCEMENTS_CHANNEL(courseMap[courseId]),
                     err,
                     reply,
                     JSON.stringify(ann).length
@@ -164,10 +147,21 @@ const run = async (courseId) => {
         );
       })
     : _.noop();
+};
+
+const run = async (courseId) => {
+  console.log("started run");
+  await pubAnnouncement(courseId);
+  await pubUpdates(courseId);
+  await pubMembers(courseId);
   console.log("completed run");
 };
 
-const courseMap = { 105430: "comp90015" };
+//Object.keys(COURSE_ID).map((course) => {
+//  setInterval(run, CANVAS_UPDATE_INTERVAL, course.toString());
+//});
 
 // 120s interval
-setInterval(run, 30 * 1000, "105430");
+run("105676");
+run("102263");
+//setInterval(run, 30 * 1000, "105430");

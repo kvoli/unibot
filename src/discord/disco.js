@@ -1,6 +1,6 @@
 import { asyncClient } from "../db/redis.js";
 import { SERVER_ID, COURSE_ID, CODE_PREFIX } from "../../config.js";
-import { promisify } from "util";
+import { EULA } from "./messages.js";
 
 const addRole = (client, user, role) =>
   client.guilds
@@ -15,16 +15,14 @@ const getRole = async (client, roleName) => {
 const updateSubjectRoles = async (client, user, username) => {
   const roles = await getRoles(username);
   roles.map((roleName) => {
-    getRole(roleName)
+    getRole(client, roleName)
       .then((role) => addRole(client, user, role))
       .catch(console.error);
   });
 };
 
-const getRoles = async (username) => {
-  const roles = await asyncClient.smembers(username);
-  return roles.map((role) => COURSE_ID[role]);
-};
+export const getRoles = async (username) =>
+  await asyncClient.smembers(username);
 
 export const startRego = (user, username) => {
   const code = genCode();
@@ -34,7 +32,7 @@ export const startRego = (user, username) => {
   return code;
 };
 
-const getRego = (user) => asyncClient.get(`inprog:${user.id}`);
+const getRego = async (userId) => await asyncClient.get(`inprog:${userId}`);
 
 const setUser = (user, username) =>
   asyncClient.hmset("registered", `${user.id}`, `${username}`);
@@ -54,10 +52,7 @@ export const shouldAttemptAuth = async (client, messageReaction, user) => {
   // user already registered, ignore
   if (userInfo) {
     console.log(
-      "user: " +
-        user.username +
-        ", has already registered - ignore react." +
-        ret
+      "user: " + user.username + ", has already registered - ignore react."
     );
     return false;
   }
@@ -76,14 +71,13 @@ export const shouldAttemptAuth = async (client, messageReaction, user) => {
   return true;
 };
 
-export const addCodeBlockedRole = async (client, message, roleName) => {
-  console.log("starting to add code blocked role for ", roleName);
+export const addCodeBlockedRole = async (client, message) => {
   if (message.guild) {
     console.log("ignoring message from guild: " + message.content);
     return;
   }
 
-  const rawRego = await getRego(message.author);
+  const rawRego = await getRego(message.author.id);
   const rego = JSON.parse(rawRego);
 
   if (!rego) {
@@ -103,23 +97,11 @@ export const addCodeBlockedRole = async (client, message, roleName) => {
     return;
   }
 
-  getRole(client, roleName)
-    .then((role) =>
-      addRole(client, message.author, role)
-        .then((_) => {
-          setUser(message.author, rego.username);
-          message.author.send("success, check back to the server.");
-          updateSubjectRoles(client, message.author, rego.username);
-        })
-        .catch((err) => {
-          console.error("error updating role " + roleName + ", err: " + err);
-          message.author.send("error updating role :/, retry later");
-        })
-    )
-    .catch((err) => {
-      console.error("error retrieving role " + roleName + ", err: " + err);
-      message.author.send("error updating role :/, retry later");
-    });
+  await updateSubjectRoles(client, message.author, rego.username);
+  await setUser(message.author, rego.username);
+  message.author.send(
+    "I've checked your assigned roles and updated my the mapping. Check back to the server."
+  );
 };
 
 export const getCourseChannel = async (client, course, channel) => {
@@ -127,4 +109,20 @@ export const getCourseChannel = async (client, course, channel) => {
   return guild.channels.cache.find((value) => {
     return value.name == channel && value.parent && value.parent.name == course;
   });
+};
+
+export const acceptTerms = async (user) => {
+  try {
+    await user.send(EULA);
+    const dmChan = await user.createDM();
+    const message = await dmChan.awaitMessages((m) => m.content === "AGREE", {
+      max: 1,
+      time: 30000,
+      errors: ["time"],
+    });
+    return true;
+  } catch (e) {
+    user.send("something's not quite right");
+    return false;
+  }
 };

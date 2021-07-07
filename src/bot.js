@@ -1,7 +1,7 @@
 "use strict";
 
 import Discord from "discord.js";
-import { DISCORD_TOKEN, SERVER_ID } from "../config.js";
+import { DISCORD_TOKEN, SERVER_ID, COURSE_ID, CODE_PREFIX } from "../config.js";
 import pkg from "lodash";
 const { noop, toUpper } = pkg;
 import { sendMail } from "./util/mail.js";
@@ -9,6 +9,8 @@ import {
   shouldAttemptAuth,
   startRego,
   addCodeBlockedRole,
+  acceptTerms,
+  getRoles,
 } from "./discord/disco.js";
 import {
   subscriber,
@@ -22,6 +24,7 @@ import {
   publishModule,
   publishDiscussion,
 } from "./discord/pub.js";
+import { StarterMessage } from "./discord/messages.js";
 
 const client = new Discord.Client();
 
@@ -39,52 +42,68 @@ client.on("ready", async () => {
 });
 
 client.on("messageReactionAdd", async (messageReaction, user) => {
-  if (!shouldAttemptAuth(client, messageReaction, user)) return;
+  const attempt = await shouldAttemptAuth(client, messageReaction, user);
+  if (!attempt) return;
 
-  user.send(
+  const accepted = await acceptTerms(user);
+  if (!accepted) return;
+
+  await user.send(
     "Please enter your unimelb username `user=yourusername` e.g. user=bot"
   );
 
-  user
-    .createDM()
-    .then((channel) =>
-      channel.awaitMessages((m) => m.content.startsWith("user="), {
+  const dmChan = await user.createDM();
+
+  try {
+    const userResponse = await dmChan.awaitMessages(
+      (m) => m.content.startsWith("user="),
+      {
         max: 1,
         time: 60000,
         errors: ["time"],
-      })
-    )
-    .then((collected) => {
-      const username = collected.last().toString().slice(5);
-      const code = startRego(user, username);
-      return sendMail(username, code);
-    })
-    .then((_) => {
-      user.send(
-        "Sent verification email, please check student inbox + spam and paste the code below. You have 5 minutes :D"
-      );
-      user
-        .createDM()
-        .then((channel) =>
-          channel.awaitMessages((m) => m.content.startsWith("dcmp@"), {
-            max: 1,
-            time: 5 * 60000,
-            errors: ["time"],
-          })
-        )
-        .then((col) => addCodeBlockedRole(client, col.last(), "student"))
-        .catch(console.error);
-    })
-    .catch((err) =>
-      user.send(
-        "Sorry, you took too long to respond. Try re-reacting to the emoji."
-      )
+      }
     );
+
+    const username = userResponse.last().toString().slice(5);
+    const code = startRego(user, username);
+
+    const userRoles = await getRoles(username);
+    const staff = userRoles.includes("teaching");
+
+    sendMail(username, code, staff);
+
+    await user.send(
+      "Sent verification email, please check email inbox + spam and paste the code below. You have 5 minutes :D"
+    );
+
+    const enteredCode = await dmChan.awaitMessages(
+      (m) => m.content.startsWith(CODE_PREFIX),
+      {
+        max: 1,
+        time: 5 * 60000,
+        errors: ["time"],
+      }
+    );
+
+    addCodeBlockedRole(client, enteredCode.first());
+  } catch (e) {
+    user.send(
+      "Sorry, you took too long to respond. Try re-reacting to the emoji."
+    );
+    console.error(e);
+    return;
+  }
 });
 
-subscriber.subscribe(DISCUSSIONS_CHANNEL("comp90015"));
-subscriber.subscribe(ANNOUNCEMENTS_CHANNEL("comp90015"));
-subscriber.subscribe(MODULES_CHANNEL("comp90015"));
+Object.values(COURSE_ID).map((course) => {
+  subscriber.subscribe(DISCUSSIONS_CHANNEL(course));
+  subscriber.subscribe(ANNOUNCEMENTS_CHANNEL(course));
+  subscriber.subscribe(MODULES_CHANNEL(course));
+});
+
+//subscriber.subscribe(DISCUSSIONS_CHANNEL("comp90015"));
+//subscriber.subscribe(ANNOUNCEMENTS_CHANNEL("comp90015"));
+//subscriber.subscribe(MODULES_CHANNEL("comp90015"));
 
 subscriber.on("message", (channel, message) => {
   const [course, chan] = channel.split(":");
