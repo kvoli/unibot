@@ -9,6 +9,6 @@ services:
       - ./redis-volume:/data
   unibot:
     image: 'kvoli/unibot'
-    environment:
-      - REDIS_HOST=redis-server
+    env_file:
+      - prod.env
 
