@@ -8,10 +8,9 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "node src/bot.js",
-    "start": "node src/bot.js && node src/canvas/watcher.js",
-    "gen": "node tests/testPub.js",
+    "bot": "node src/bot.js",
     "canvas": "node src/canvas/watcher.js",
+    "start": "npm run canvas && npm run bot",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

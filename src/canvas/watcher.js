@@ -158,5 +158,7 @@ const run = async (courseId) => {
 };
 
 Object.keys(COURSE_ID).map((course) => {
+  // run once immediately
+  run(course.toString());
   setInterval(run, CANVAS_UPDATE_INTERVAL * 60 * 1000, course.toString());
 });
