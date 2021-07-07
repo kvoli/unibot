@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "dev": "node src/bot.js",
-    "start": "node src/bot.js",
+    "start": "node src/bot.js && node src/canvas/watcher.js",
     "gen": "node tests/testPub.js",
     "canvas": "node src/canvas/watcher.js",
     "test": "echo \"Error: no test specified\" && exit 1"
