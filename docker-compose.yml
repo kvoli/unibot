@@ -11,4 +11,12 @@ services:
     image: 'kvoli/unibot'
     env_file:
       - prod.env
-
+  watchtower:
+    command: "unibot"
+    container_name: watchtower
+    image: containrrr/watchtower:latest
+    env_file:
+      - watchtower.env
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
