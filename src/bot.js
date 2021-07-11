@@ -1,7 +1,13 @@
 "use strict";
 
 import Discord from "discord.js";
-import { DISCORD_TOKEN, SERVER_ID, COURSE_ID, CODE_PREFIX } from "../config.js";
+import {
+  DISCORD_TOKEN,
+  SERVER_ID,
+  COURSE_ID,
+  CODE_PREFIX,
+  WHITELISTED_CHANNELS,
+} from "../config.js";
 import pkg from "lodash";
 const { noop, toUpper } = pkg;
 import { sendMail } from "./util/mail.js";
@@ -24,21 +30,32 @@ import {
   publishModule,
   publishDiscussion,
 } from "./discord/pub.js";
-import { StarterMessage } from "./discord/messages.js";
+import { EULAPinned, StarterMessage } from "./discord/messages.js";
 
 const client = new Discord.Client();
 
 client.on("ready", async () => {
-  client.guilds.fetch(SERVER_ID, false, true).then((server) =>
-    server.systemChannel.messages
-      .fetchPinned()
-      .then((pinned) => {
-        pinned.size < 1
-          ? server.systemChannel.send(StarterMessage).then((msg) => msg.pin())
+  try {
+    const server = await client.guilds.fetch(SERVER_ID, false, true);
+    // check the system channel has the starter message
+    const pinned = await server.systemChannel.messages.fetchPinned();
+    pinned.size < 1
+      ? server.systemChannel.send(StarterMessage).then((msg) => msg.pin())
+      : noop();
+
+    // check all channels have an EULA message
+    server.channels.cache.map(async (channel) => {
+      const chan = await channel.fetch();
+      if (chan.type === "text" && !WHITELISTED_CHANNELS.has(chan.name)) {
+        const pinnedMessages = await chan.messages.fetchPinned();
+        pinnedMessages.size < 1
+          ? chan.send(EULAPinned).then((msg) => msg.pin())
           : noop();
-      })
-      .catch(console.error)
-  );
+      }
+    });
+  } catch (e) {
+    console.error("unable to update pinned messages, ", e);
+  }
 });
 
 client.on("messageReactionAdd", async (messageReaction, user) => {

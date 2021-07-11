@@ -16,6 +16,13 @@ export const REDIS_HOST = process.env.REDIS_HOST.toString();
 /* retried authentication per discord account, before banning*/
 export const MAX_RETRIES = 15;
 
+export const WHITELISTED_CHANNELS = new Set([
+  "teaching",
+  "updates",
+  "announcements",
+  "notify",
+]);
+
 export const EMAIL_SUBJECT = "CIS Systems Subject Discord Server";
 
 export const STAFF_EMAIL_SUFFIX = "@unimelb.edu.au";

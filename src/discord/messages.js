@@ -97,3 +97,17 @@ export const EULA = new Discord.MessageEmbed()
       chat channels: [more information](https://policy.unimelb.edu.au/MPF1324#section-4.1).\n\n \
       respond AGREE if you have understood and agree."
   );
+
+export const EULAPinned = new Discord.MessageEmbed()
+  .setAuthor(
+    "CIS School",
+    "https://cpb-ap-se2.wpmucdn.com/blogs.unimelb.edu.au/dist/6/275/files/2017/09/04_Logo_Vertical-Housed-1abdv7t.jpg"
+  )
+  .setColor("#3636cc")
+  .setURL("https://policy.unimelb.edu.au/MPF1324#section-4.1")
+  .setTitle(`CIS Subject Discord Terms of Use`)
+  .setDescription(
+    "While Discord is for informal chat among students and staff of the subject, you are expected to \
+      uphold the University of Melbourne policy on Student Conduct at all times in the hosted Discord \
+      chat channels: [more information](https://policy.unimelb.edu.au/MPF1324#section-4.1).\n\n "
+  );
