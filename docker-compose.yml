@@ -8,11 +8,12 @@ services:
     volumes:
       - ./redis-volume:/data
   unibot:
+    container_name: unibot
     image: 'kvoli/unibot'
     env_file:
       - prod.env
   watchtower:
-    command: "unibot"
+    command: unibot
     container_name: watchtower
     image: containrrr/watchtower:latest
     env_file:
