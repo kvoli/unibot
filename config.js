@@ -32,7 +32,7 @@ export const STUDENT_EMAIL_SUFFIX = "@student.unimelb.edu.au";
 
 export const CODE_PREFIX = "dcmp@";
 
-export const BYPASS_CONFIG = new Map([["159092424558247936", "mcclernona"]]);
+export const BYPASS_CONFIG = new Map([]);
 
 /* The number of minutes to wait between updating canvas information*/
 export const CANVAS_UPDATE_INTERVAL = 5;

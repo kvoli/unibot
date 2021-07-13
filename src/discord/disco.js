@@ -1,6 +1,7 @@
 import { asyncClient } from "../db/redis.js";
 import { SERVER_ID, COURSE_ID, CODE_PREFIX } from "../../config.js";
 import { EULA, WelcomeMessage } from "./messages.js";
+import _ from "lodash";
 
 const addRole = (client, user, role) =>
   client.guilds
@@ -42,11 +43,26 @@ const getUser = (user) => asyncClient.hget("registered", user.id);
 const genCode = () =>
   CODE_PREFIX + Math.trunc(Math.random() * 1e16).toString(16);
 
+export const startSession = async (user) => {
+  await asyncClient.set(`reacted+${user.id}`, user.id);
+  asyncClient.expire(`reacted+${user.id}`, 100);
+};
+
 export const shouldAttemptAuth = async (client, messageReaction, user) => {
   // if the reaction was not on one of our messages, ignore
   if (!messageReaction.message.author.equals(client.user)) {
     return false;
   }
+
+  const hasSession = await asyncClient.get(`reacted+${user.id}`);
+
+  if (hasSession) {
+    console.log(
+      "user " + user.username + ", has an in progress request - ignore react."
+    );
+    return false;
+  }
+
   const userInfo = await getUser(user);
 
   // user already registered, ignore
@@ -64,7 +80,6 @@ export const shouldAttemptAuth = async (client, messageReaction, user) => {
     console.log(
       "user: " + user.username + ", is already in progress - ignore react."
     );
-    user.send("Hi, you already have an in progress auth request.");
     return false;
   }
 
@@ -127,14 +142,20 @@ export const acceptTerms = async (user) => {
   try {
     await user.send(EULA);
     const dmChan = await user.createDM();
-    const message = await dmChan.awaitMessages((m) => m.content === "AGREE", {
-      max: 1,
-      time: 30000,
-      errors: ["time"],
-    });
+    const message = await dmChan.awaitMessages(
+      (m) => _.toUpper(m.content) === "AGREE",
+      {
+        max: 1,
+        time: 100000,
+        errors: ["time"],
+      }
+    );
     return true;
   } catch (e) {
-    user.send("something's not quite right");
+    user.send(
+      "You haven't agreed to the TOS (or i crashed). Please try again later."
+    );
+    console.error(e);
     return false;
   }
 };

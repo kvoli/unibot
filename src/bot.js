@@ -19,6 +19,7 @@ import {
   getRoles,
   completeCodeAuth,
   setupUser,
+  startSession,
 } from "./discord/disco.js";
 import {
   subscriber,
@@ -68,6 +69,8 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     setupUser(client, user, BYPASS_CONFIG.get(user.id));
     return;
   }
+
+  await startSession(user);
 
   const accepted = await acceptTerms(user);
   if (!accepted) return;
