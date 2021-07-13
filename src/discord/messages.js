@@ -111,3 +111,16 @@ export const EULAPinned = new Discord.MessageEmbed()
       uphold the University of Melbourne policy on Student Conduct at all times in the hosted Discord \
       chat channels: [more information](https://policy.unimelb.edu.au/MPF1324#section-4.1).\n\n "
   );
+
+export const WelcomeMessage = (discordUser, canvasUser) =>
+  new Discord.MessageEmbed()
+    .setColor("#3636cc")
+    .setTitle(`Welcome ${discordUser.username}`)
+    .setImage(discordUser.avatarURL())
+    .setDescription(
+      `${canvasUser.user.short_name.split(" ").shift()} (${
+        canvasUser.user.login_id
+      })  just registered their canvas <-> discord account ${
+        discordUser.username
+      }`
+    );

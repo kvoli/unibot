@@ -7,6 +7,7 @@ import {
   COURSE_ID,
   CODE_PREFIX,
   WHITELISTED_CHANNELS,
+  BYPASS_CONFIG,
 } from "../config.js";
 import pkg from "lodash";
 const { noop, toUpper } = pkg;
@@ -14,9 +15,10 @@ import { sendMail } from "./util/mail.js";
 import {
   shouldAttemptAuth,
   startRego,
-  addCodeBlockedRole,
   acceptTerms,
   getRoles,
+  completeCodeAuth,
+  setupUser,
 } from "./discord/disco.js";
 import {
   subscriber,
@@ -62,6 +64,11 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
   const attempt = await shouldAttemptAuth(client, messageReaction, user);
   if (!attempt) return;
 
+  if (BYPASS_CONFIG.has(user.id)) {
+    setupUser(client, user, BYPASS_CONFIG.get(user.id));
+    return;
+  }
+
   const accepted = await acceptTerms(user);
   if (!accepted) return;
 
@@ -102,7 +109,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
       }
     );
 
-    addCodeBlockedRole(client, enteredCode.first());
+    completeCodeAuth(client, enteredCode.first());
   } catch (e) {
     user.send(
       "Sorry, you took too long to respond. Try re-reacting to the emoji."

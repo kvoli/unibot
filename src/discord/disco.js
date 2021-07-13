@@ -1,6 +1,6 @@
 import { asyncClient } from "../db/redis.js";
 import { SERVER_ID, COURSE_ID, CODE_PREFIX } from "../../config.js";
-import { EULA } from "./messages.js";
+import { EULA, WelcomeMessage } from "./messages.js";
 
 const addRole = (client, user, role) =>
   client.guilds
@@ -71,7 +71,16 @@ export const shouldAttemptAuth = async (client, messageReaction, user) => {
   return true;
 };
 
-export const addCodeBlockedRole = async (client, message) => {
+export const setupUser = async (client, discordUser, canvasUsername) => {
+  await updateSubjectRoles(client, discordUser, canvasUsername);
+  await setUser(discordUser, canvasUsername);
+  await welcomeUser(client, discordUser);
+  discordUser.send(
+    "I've checked your assigned roles and updated my the mapping. Check back to the server."
+  );
+};
+
+export const completeCodeAuth = async (client, message) => {
   if (message.guild) {
     console.log("ignoring message from guild: " + message.content);
     return;
@@ -97,17 +106,20 @@ export const addCodeBlockedRole = async (client, message) => {
     return;
   }
 
-  await updateSubjectRoles(client, message.author, rego.username);
-  await setUser(message.author, rego.username);
-  message.author.send(
-    "I've checked your assigned roles and updated my the mapping. Check back to the server."
-  );
+  await setupUser(client, message.author, rego.username);
 };
 
 export const getCourseChannel = async (client, course, channel) => {
   const guild = await client.guilds.fetch(SERVER_ID);
   return guild.channels.cache.find((value) => {
     return value.name == channel && value.parent && value.parent.name == course;
+  });
+};
+
+export const getFirstChannelByName = async (client, channelName) => {
+  const guild = await client.guilds.fetch(SERVER_ID);
+  return guild.channels.cache.find((value) => {
+    return value.name == channelName;
   });
 };
 
@@ -124,5 +136,39 @@ export const acceptTerms = async (user) => {
   } catch (e) {
     user.send("something's not quite right");
     return false;
+  }
+};
+
+export const welcomeUser = async (client, discordUser) => {
+  try {
+    const canvasUsername = await getUser(discordUser);
+    const userRoles = await getRoles(canvasUsername);
+    if (userRoles.includes("teaching")) {
+      const subject = userRoles
+        .filter((v) => v != "staff" && !v.endsWith("staff"))
+        .shift();
+      if (!subject) return;
+      const rawRoles = await asyncClient.hget(subject, "staff");
+      const roleDb = JSON.parse(rawRoles);
+      const canvasUser = roleDb
+        .filter((e) => e.user.login_id === canvasUsername)
+        .shift();
+      if (!canvasUser) return;
+      const welcomeChannel = await getFirstChannelByName(client, "welcome");
+      welcomeChannel.send(WelcomeMessage(discordUser, canvasUser));
+    } else {
+      const subject = userRoles.filter((v) => v != "student").shift();
+      if (!subject) return;
+      const rawRoles = await asyncClient.hget(subject, "staff");
+      const roleDb = JSON.parse(rawRoles);
+      const canvasUser = roleDb
+        .filter((e) => e.user.login_id === canvasUsername)
+        .shift();
+      if (!canvasUser) return;
+      const welcomeChannel = await getFirstChannelByName(client, "welcome");
+      welcomeChannel.send(WelcomeMessage(discordUser, canvasUser));
+    }
+  } catch (e) {
+    console.error(e);
   }
 };

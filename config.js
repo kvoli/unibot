@@ -21,6 +21,7 @@ export const WHITELISTED_CHANNELS = new Set([
   "updates",
   "announcements",
   "notify",
+  "welcome",
 ]);
 
 export const EMAIL_SUBJECT = "CIS Systems Subject Discord Server";
@@ -30,6 +31,8 @@ export const STAFF_EMAIL_SUFFIX = "@unimelb.edu.au";
 export const STUDENT_EMAIL_SUFFIX = "@student.unimelb.edu.au";
 
 export const CODE_PREFIX = "dcmp@";
+
+export const BYPASS_CONFIG = new Map([["159092424558247936", "mcclernona"]]);
 
 /* The number of minutes to wait between updating canvas information*/
 export const CANVAS_UPDATE_INTERVAL = 5;
