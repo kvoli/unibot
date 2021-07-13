@@ -76,7 +76,7 @@ export const setupUser = async (client, discordUser, canvasUsername) => {
   await setUser(discordUser, canvasUsername);
   await welcomeUser(client, discordUser);
   discordUser.send(
-    "I've checked your assigned roles and updated my the mapping. Check back to the server."
+    "I've checked your assigned roles and updated my mapping. Check back to the server."
   );
 };
 
@@ -159,7 +159,7 @@ export const welcomeUser = async (client, discordUser) => {
     } else {
       const subject = userRoles.filter((v) => v != "student").shift();
       if (!subject) return;
-      const rawRoles = await asyncClient.hget(subject, "staff");
+      const rawRoles = await asyncClient.hget(subject, "students");
       const roleDb = JSON.parse(rawRoles);
       const canvasUser = roleDb
         .filter((e) => e.user.login_id === canvasUsername)
@@ -167,6 +167,7 @@ export const welcomeUser = async (client, discordUser) => {
       if (!canvasUser) return;
       const welcomeChannel = await getFirstChannelByName(client, "welcome");
       welcomeChannel.send(WelcomeMessage(discordUser, canvasUser));
+      console.log("sent welcome message for user", canvasUsername);
     }
   } catch (e) {
     console.error(e);
