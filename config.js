@@ -13,6 +13,8 @@ export const SERVER_ID = process.env.SERVER_ID.toString();
 
 export const REDIS_HOST = process.env.REDIS_HOST.toString();
 
+export const DISCORD_LOG_WEBHOOK = process.env.DISCORD_LOG_WEBHOOK.toString();
+
 /* retried authentication per discord account, before banning*/
 export const MAX_RETRIES = 15;
 

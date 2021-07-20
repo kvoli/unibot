@@ -150,11 +150,17 @@ const pubAnnouncement = async (courseId) => {
 };
 
 const run = async (courseId) => {
-  console.log("started run");
-  await pubAnnouncement(courseId);
-  await pubUpdates(courseId);
-  await pubMembers(courseId);
-  console.log("completed run");
+  try {
+    await pubAnnouncement(courseId);
+    await pubUpdates(courseId);
+    await pubMembers(courseId);
+  } catch (e) {
+    logger.log({
+      level: "error",
+      message: "canvas watcher run failure",
+      error: e,
+    });
+  }
 };
 
 Object.keys(COURSE_ID).map((course) => {

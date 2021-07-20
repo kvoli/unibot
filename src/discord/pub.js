@@ -5,13 +5,20 @@ import {
   AnnouncementMessage,
   ModuleMessage,
 } from "./messages.js";
+import { logger } from "../util/logger.js";
 
 export const publishAnnouncement = (client, course, message) => {
   getCourseChannel(client, course, "announcements")
     .then((chan) => {
       chan.send(AnnouncementMessage(message));
     })
-    .catch(console.error);
+    .catch((e) =>
+      logger.log({
+        level: "error",
+        message: `unable to publish announcement`,
+        error: e,
+      })
+    );
 };
 
 export const publishDiscussion = (client, course, message) => {
@@ -19,7 +26,13 @@ export const publishDiscussion = (client, course, message) => {
     .then((chan) => {
       chan.send(DiscussionMessage(message));
     })
-    .catch(console.error);
+    .catch((e) =>
+      logger.log({
+        level: "error",
+        message: `unable to publish discussion`,
+        error: e,
+      })
+    );
 };
 
 export const publishModule = (client, course, message) => {
@@ -28,5 +41,11 @@ export const publishModule = (client, course, message) => {
     .then((chan) => {
       chan.send(ModuleMessage(message));
     })
-    .catch(console.error);
+    .catch((e) =>
+      logger.log({
+        level: "error",
+        message: `unable to publish module update`,
+        error: e,
+      })
+    );
 };

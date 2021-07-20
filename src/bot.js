@@ -34,6 +34,7 @@ import {
   publishDiscussion,
 } from "./discord/pub.js";
 import { EULAPinned, StarterMessage } from "./discord/messages.js";
+import { logger } from "./util/logger.js";
 
 const client = new Discord.Client();
 
@@ -57,7 +58,11 @@ client.on("ready", async () => {
       }
     });
   } catch (e) {
-    console.error("unable to update pinned messages, ", e);
+    logger.log({
+      level: "error",
+      message: "unable to update pinned messages",
+      error: e,
+    });
   }
 });
 
@@ -117,7 +122,13 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     user.send(
       "Sorry, you took too long to respond. Try re-reacting to the emoji."
     );
-    console.error(e);
+    logger.log({
+      level: "error",
+      message: `unable to complete email auth for unimelb username: ${username}, user: ${JSON.stringify(
+        user
+      )}`,
+      error: e,
+    });
     return;
   }
 });

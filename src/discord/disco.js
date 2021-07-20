@@ -2,6 +2,7 @@ import { asyncClient } from "../db/redis.js";
 import { SERVER_ID, COURSE_ID, CODE_PREFIX } from "../../config.js";
 import { EULA, WelcomeMessage } from "./messages.js";
 import _ from "lodash";
+import { logger } from "../util/logger.js";
 
 const addRole = (client, user, role) =>
   client.guilds
@@ -18,7 +19,13 @@ const updateSubjectRoles = async (client, user, username) => {
   roles.map((roleName) => {
     getRole(client, roleName)
       .then((role) => addRole(client, user, role))
-      .catch(console.error);
+      .catch((e) =>
+        logger.log({
+          level: "error",
+          message: `unable to update subject roles for unimelb username ${username}`,
+          error: e,
+        })
+      );
   });
 };
 
@@ -146,7 +153,7 @@ export const acceptTerms = async (user) => {
       (m) => _.toUpper(m.content) === "AGREE",
       {
         max: 1,
-        time: 100000,
+        time: 10000,
         errors: ["time"],
       }
     );
@@ -155,7 +162,11 @@ export const acceptTerms = async (user) => {
     user.send(
       "You haven't agreed to the TOS (or i crashed). Please try again later."
     );
-    console.error(e);
+    logger.log({
+      level: "warn",
+      message: `Error on new user accepting TOS: ${user.username}`,
+      error: e,
+    });
     return false;
   }
 };
@@ -191,6 +202,10 @@ export const welcomeUser = async (client, discordUser) => {
       console.log("sent welcome message for user", canvasUsername);
     }
   } catch (e) {
-    console.error(e);
+    logger.log({
+      level: "warn",
+      message: `error welcoming new user ${JSON.stringify(discordUser)}`,
+      error: e,
+    });
   }
 };
