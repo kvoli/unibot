@@ -1,22 +1,23 @@
 version: '3'
 services:
   redis-server:
-    command: redis-server --appendonly yes
     image: 'redis'
+    container_name: redis-server
+    command: redis-server --appendonly yes
     ports:
       - "6379:6379"
     volumes:
       - ./redis-volume:/data
   unibot:
-    container_name: unibot
     image: 'kvoli/unibot'
+    container_name: unibot
     restart: always
     env_file:
       - prod.env
   watchtower:
-    command: unibot
-    container_name: watchtower
     image: containrrr/watchtower:latest
+    container_name: watchtower
+    command: unibot
     env_file:
       - watchtower.env
     restart: always
