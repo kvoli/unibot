@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "async-redis": "^2.0.0",
+    "dayjs": "^1.10.6",
     "discord.js": "^12.5.3",
     "lodash": "^4.17.21",
     "nodemailer": "^6.6.2",

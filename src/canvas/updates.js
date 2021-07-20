@@ -7,20 +7,29 @@ import {
   getDiscussionTopics,
   getFullDiscussion,
 } from "node-canvas-api";
+import { shouldPublish } from "./util.js";
 
 export const getUpdates = async (courseId) => {
-  const modules = await getModules(courseId, getOptions.module.include.items);
+  const allModules = await getModules(
+    courseId,
+    getOptions.module.include.items
+  );
   const discussions = await getDiscussionDetails(courseId);
 
-  console.log(modules);
+  const modules = allModules.filter((m) =>
+    shouldPublish(m.published, m.unlock_at)
+  );
 
   return { modules, discussions };
 };
 
 const getDiscussionDetails = async (courseId) => {
   const discussions = await getDiscussionTopics(courseId);
+  const published = discussions.filter((topic) =>
+    shouldPublish(topic.published, topic.delayed_post_at)
+  );
 
-  const ret = discussions.map(async (topic) => {
+  const ret = published.map(async (topic) => {
     const details = await getFullDiscussion(courseId, topic.id);
     return parseTopicDetail(topic, details);
   });

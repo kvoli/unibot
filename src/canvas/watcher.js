@@ -55,7 +55,7 @@ const pubUpdates = async (courseId) => {
   modules
     ? modules.map((module) =>
         module.items.map((moduleItem) => {
-          publisher.sismember(
+          publisher.hexists(
             `${courseMap[courseId]}-modules`,
             moduleItem.id.toString(),
             (err, reply) => {
@@ -86,7 +86,7 @@ const pubUpdates = async (courseId) => {
   discussions
     ? discussions.map((disc) =>
         disc.map((post) =>
-          publisher.sismember(
+          publisher.hexists(
             `${courseMap[courseId]}-posts`,
             post.id.toString(),
             (err, reply) => {
@@ -120,7 +120,7 @@ const pubAnnouncement = async (courseId) => {
   const { announcements } = await getAnnouncements(courseId);
   announcements
     ? announcements.map((ann) => {
-        publisher.sismember(
+        publisher.hexists(
           `${courseId}-announcements`,
           ann.id.toString(),
           (err, reply) => {
