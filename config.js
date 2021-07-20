@@ -24,6 +24,7 @@ export const WHITELISTED_CHANNELS = new Set([
   "announcements",
   "notify",
   "welcome",
+  "splat",
 ]);
 
 export const EMAIL_SUBJECT = "CIS Systems Subject Discord Server";
