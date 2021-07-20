@@ -207,8 +207,8 @@ export const welcomeUser = async (client, discordUser) => {
     }
   } catch (e) {
     logger.log({
-      level: "warn",
-      message: `error welcoming new user ${JSON.stringify(discordUser)}`,
+      level: "error",
+      message: `error welcoming new user ${discordUser.username}, err: ${e}`,
       error: e,
     });
   }
