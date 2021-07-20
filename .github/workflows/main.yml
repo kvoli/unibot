@@ -19,9 +19,3 @@ jobs:
         run: docker build -t kvoli/unibot .
       - name: Push the Docker image to the registry
         run: docker push kvoli/unibot:latest
-      - name: Test Success
-        uses: rjstone/discord-webhook-notify@v1
-        with:
-            severity: info
-            details: Published latest image of unibot to dockerhub.
-            webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
