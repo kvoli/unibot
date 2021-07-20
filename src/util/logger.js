@@ -8,6 +8,9 @@ var discordTransport = new DiscordTransport({
   defaultMeta: { service: "unibot" },
   level: "warn",
 });
+
+var stderr = new winston.transports.Console();
+
 export const logger = winston.createLogger({
-  transports: [discordTransport, new winston.transports.Console()],
+  transports: [discordTransport, new winston.transports.Console(), stderr],
 });

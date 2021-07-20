@@ -132,10 +132,14 @@ export const completeCodeAuth = async (client, message) => {
 };
 
 export const getCourseChannel = async (client, course, channel) => {
-  const guild = await client.guilds.fetch(SERVER_ID);
-  return guild.channels.cache.find((value) => {
-    return value.name == channel && value.parent && value.parent.name == course;
-  });
+  const guild = await client.guilds.fetch(SERVER_ID, true, true);
+  return guild.channels.cache.find(
+    (value) =>
+      value.type == "text" &&
+      value.name == channel &&
+      value.parent &&
+      value.parent.name == course
+  );
 };
 
 export const getFirstChannelByName = async (client, channelName) => {

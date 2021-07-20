@@ -36,6 +36,7 @@
     "node-canvas-api": "^1.6.9",
     "nodemailer": "^6.6.2",
     "redis": "^3.1.2",
+    "retry": "^0.13.1",
     "turndown": "^7.1.1",
     "winston": "^3.3.3"
   }

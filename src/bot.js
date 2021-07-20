@@ -35,12 +35,13 @@ import {
 } from "./discord/pub.js";
 import { EULAPinned, StarterMessage } from "./discord/messages.js";
 import { logger } from "./util/logger.js";
+import retry from "retry";
 
 const client = new Discord.Client();
 
 client.on("ready", async () => {
   try {
-    const server = await client.guilds.fetch(SERVER_ID, false, true);
+    const server = await client.guilds.fetch(SERVER_ID, true, true);
     // check the system channel has the starter message
     const pinned = await server.systemChannel.messages.fetchPinned();
     pinned.size < 1
@@ -139,29 +140,50 @@ Object.values(COURSE_ID).map((course) => {
   subscriber.subscribe(MODULES_CHANNEL(course));
 });
 
-//subscriber.subscribe(DISCUSSIONS_CHANNEL("comp90015"));
-//subscriber.subscribe(ANNOUNCEMENTS_CHANNEL("comp90015"));
-//subscriber.subscribe(MODULES_CHANNEL("comp90015"));
-
 subscriber.on("message", (channel, message) => {
   const [course, chan] = channel.split(":");
   const msg = JSON.parse(message);
   const crs = toUpper(course);
 
-  switch (chan) {
-    case "DISCUSSIONS_CHANNEL": {
-      publishDiscussion(client, crs, msg);
-      break;
-    }
-    case "MODULES_CHANNEL": {
-      publishModule(client, crs, msg);
-      break;
-    }
-    case "ANNOUNCEMENTS_CHANNEL": {
-      publishAnnouncement(client, crs, msg);
-      break;
-    }
-  }
+  faultyPublish(client, chan, crs, msg, (err) =>
+    logger.log({
+      level: err ? "error" : "info",
+      message: err
+        ? `unable to publish message  after retrying to ${crs}:${chan}`
+        : `published message new msg to ${crs}:${chan}`,
+      error: err,
+    })
+  );
 });
+
+const faultyPublish = (client, chan, crs, msg, cb) => {
+  var operation = retry.operation();
+
+  operation.attempt(function (currentAttempt) {
+    switch (chan) {
+      case "DISCUSSIONS_CHANNEL": {
+        publishDiscussion(client, crs, msg, function (err) {
+          if (operation.retry(err)) return;
+          cb(err ? operation.mainError() : null);
+        });
+        break;
+      }
+      case "MODULES_CHANNEL": {
+        publishModule(client, crs, msg, function (err) {
+          if (operation.retry(err)) return;
+          cb(err ? operation.mainError() : null);
+        });
+        break;
+      }
+      case "ANNOUNCEMENTS_CHANNEL": {
+        publishAnnouncement(client, crs, msg, function (err) {
+          if (operation.retry(err)) return;
+          cb(err ? operation.mainError() : null);
+        });
+        break;
+      }
+    }
+  });
+};
 
 client.login(DISCORD_TOKEN);

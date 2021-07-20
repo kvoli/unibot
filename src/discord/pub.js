@@ -1,51 +1,26 @@
 import { getCourseChannel } from "./disco.js";
-import { WHITELISTED_MODULE_TYPES } from "../../config.js";
 import {
   DiscussionMessage,
   AnnouncementMessage,
   ModuleMessage,
 } from "./messages.js";
-import { logger } from "../util/logger.js";
 
-export const publishAnnouncement = (client, course, message) => {
+export const publishAnnouncement = (client, course, message, cb) =>
   getCourseChannel(client, course, "announcements")
-    .then((chan) => {
-      chan.send(AnnouncementMessage(message));
-    })
-    .catch((e) =>
-      logger.log({
-        level: "error",
-        message: `unable to publish announcement`,
-        error: e,
-      })
-    );
-};
+    .then((chan) =>
+      chan
+        .send(AnnouncementMessage(message))
+        .then(cb(undefined))
+        .catch((err) => cb(err))
+    )
+    .catch((err) => cb(err));
 
-export const publishDiscussion = (client, course, message) => {
+export const publishDiscussion = (client, course, message, cb) =>
   getCourseChannel(client, course, "updates")
-    .then((chan) => {
-      chan.send(DiscussionMessage(message));
-    })
-    .catch((e) =>
-      logger.log({
-        level: "error",
-        message: `unable to publish discussion`,
-        error: e,
-      })
-    );
-};
+    .then((chan) => chan.send(DiscussionMessage(message)).then(cb(undefined)))
+    .catch((err) => cb(err));
 
-export const publishModule = (client, course, message) => {
-  if (!message.published || !WHITELISTED_MODULE_TYPES.has(message.type)) return;
+export const publishModule = (client, course, message, cb) =>
   getCourseChannel(client, course, "updates")
-    .then((chan) => {
-      chan.send(ModuleMessage(message));
-    })
-    .catch((e) =>
-      logger.log({
-        level: "error",
-        message: `unable to publish module update`,
-        error: e,
-      })
-    );
-};
+    .then((chan) => chan.send(ModuleMessage(message)).then(cb(undefined)))
+    .catch((err) => cb(err));

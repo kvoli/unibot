@@ -7,6 +7,7 @@ import {
   getDiscussionTopics,
   getFullDiscussion,
 } from "node-canvas-api";
+import { WHITELISTED_MODULE_TYPES } from "../../config.js";
 import { shouldPublish } from "./util.js";
 
 export const getUpdates = async (courseId) => {
@@ -16,8 +17,10 @@ export const getUpdates = async (courseId) => {
   );
   const discussions = await getDiscussionDetails(courseId);
 
-  const modules = allModules.filter((m) =>
-    shouldPublish(m.published, m.unlock_at)
+  const modules = allModules.filter(
+    (m) =>
+      shouldPublish(m.published, m.unlock_at) &&
+      WHITELISTED_MODULE_TYPES.has(m.type)
   );
 
   return { modules, discussions };
