@@ -244,23 +244,20 @@ export const getCanvasUserInfo = async (canvasUsername) => {
     if (!subject) return;
     const rawRoles = await asyncClient.hget(subject, "staff");
     const roleDb = JSON.parse(rawRoles);
-    return (canvasUser = roleDb
-      .filter((e) => e.user.login_id === canvasUsername)
-      .shift());
+    console.log(roleDb);
+    return roleDb.filter((e) => e.user.login_id === canvasUsername).shift();
   } else {
     const subject = userRoles.filter((v) => v != "student").shift();
     if (!subject) return;
     const rawRoles = await asyncClient.hget(subject, "students");
     const roleDb = JSON.parse(rawRoles);
-    return (canvasUser = roleDb
-      .filter((e) => e.user.login_id === canvasUsername)
-      .shift());
+    return roleDb.filter((e) => e.user.login_id === canvasUsername).shift();
   }
 };
 
 export const welcomeUser = async (client, discordUser, canvasUsername) => {
   try {
-    canvasUser = getCanvasUserInfo(canvasUsername);
+    const canvasUser = await getCanvasUserInfo(canvasUsername);
     const welcomeChannel = await getFirstChannelByName(client, "welcome");
     welcomeChannel.send(WelcomeMessage(discordUser, canvasUser));
   } catch (e) {
