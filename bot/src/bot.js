@@ -112,9 +112,24 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     const userRoles = await getRoles(username);
     const staff = userRoles.includes("teaching");
 
-    sendMail(username, code, staff);
+    const sentMail = await sendMail(username, code, staff);
+    if (sentMail.rejected()) {
+      user.send(
+        "The username doesn't match anything in my system. It is usually the first letter of your name and your full last name e.g. john smith = jsmith. Double check on canvas!"
+      );
 
-    await user.send(
+      logger.log({
+        level: "warn",
+        message: `Issue sending mail to ${username}, with info ${
+          sentMail.response
+            ? JSON.stringify(sentMail.response)
+            : "undefined mail"
+        }`,
+      });
+      return;
+    }
+
+    const emailSent = await user.send(
       "Sent verification email, please check email inbox + spam and paste the code below. You have 5 minutes :D"
     );
 
@@ -134,9 +149,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     );
     logger.log({
       level: "error",
-      message: `unable to complete email auth for unimelb username: ${
-        username ? username : "no username given"
-      }, user: ${JSON.stringify(user)}`,
+      message: `unable to complete email auth user: ${JSON.stringify(user)}`,
       error: e,
     });
     return;
