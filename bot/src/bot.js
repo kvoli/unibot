@@ -21,7 +21,6 @@ import {
   setupUser,
   startSession,
   matchRoles,
-  kickOldUsers,
 } from "./discord/disco.js";
 import {
   subscriber,
