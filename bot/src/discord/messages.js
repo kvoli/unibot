@@ -116,7 +116,7 @@ export const WelcomeMessage = (discordUser, canvasUser) =>
   new Discord.MessageEmbed()
     .setColor("#3636cc")
     .setTitle(`Welcome ${discordUser.username}`)
-    .setImage(discordUser.avatarURL())
+    .setImage(discordUser.displayAvatarURL())
     .setDescription(
       `${canvasUser.user.short_name.split(" ").shift()} (${
         canvasUser.user.login_id
@@ -124,3 +124,21 @@ export const WelcomeMessage = (discordUser, canvasUser) =>
         discordUser.username
       }`
     );
+
+export const TOSErrorMessage =
+  "You haven't agreed to the TOS (or I crashed).\n Please try again later or post in #support if it happens again.";
+
+export const AlreadyInProgressMessage = (username) =>
+  `There is already an in progress request for ${username}, try again later.`;
+
+export const AlreadyRegisteredMessage = (username) =>
+  `There is already an registration for ${username}, roles are updated on an event basis and polled @10min intervals. Please msg kvoli if you think there is an issue.`;
+
+export const UpdatedMappingMessage = (canvasUsername) =>
+  `Hi ${canvasUsername} have updated your roles on the CIS Systems Server. Please check back and have a look`;
+
+export const KickWarningLog = (displayName) =>
+  `Discord user ${displayName} has been notified that their account is currently unverified. I've double checked my records and found no mention! Account will be kicked in 1 week after joining if non-authenticated`;
+
+export const KickWarningMessage = (displayName) =>
+  `Discord user ${displayName} has been notified that their account is currently unverified. I've double checked my records and found no mention! Account will be kicked in 1 week after joining if non-authenticated.`;

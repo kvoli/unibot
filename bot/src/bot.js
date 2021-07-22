@@ -12,16 +12,16 @@ import {
 import pkg from "lodash";
 const { noop, toUpper } = pkg;
 import { sendMail } from "./util/mail.js";
+import { getRoles, shouldAttemptAuth } from "./discord/disco";
+
 import {
-  shouldAttemptAuth,
   startRego,
   acceptTerms,
-  getRoles,
   completeCodeAuth,
   setupUser,
   startSession,
   matchRoles,
-} from "./discord/disco.js";
+} from "./discord/update.js";
 import {
   subscriber,
   DISCUSSIONS_CHANNEL,
@@ -38,25 +38,22 @@ import { EULAPinned, StarterMessage } from "./discord/messages.js";
 import { logger } from "./util/logger.js";
 import retry from "retry";
 
-const intents = new Intents([
-  Intents.NON_PRIVILEGED, // include all non-privileged intents, would be better to specify which ones you actually need
-  "GUILD_MEMBERS", // lets you request guild members (i.e. fixes the issue)
-]);
+const intents = new Intents([Intents.NON_PRIVILEGED, "GUILD_MEMBERS"]);
 const client = new Client({ ws: { intents } });
 
 client.on("ready", async () => {
   try {
-    const server = await client.guilds.fetch(DISCORD_SERVER_ID, true, true);
+    var server = await client.guilds.fetch(DISCORD_SERVER_ID, true, true);
     // check the system channel has the starter message
-    const pinned = await server.systemChannel.messages.fetchPinned();
+    var pinned = await server.systemChannel.messages.fetchPinned();
     pinned.size < 1
       ? server.systemChannel.send(StarterMessage).then((msg) => msg.pin())
       : noop();
     // check all channels have an EULA message
     server.channels.cache.map(async (channel) => {
-      const chan = await channel.fetch();
+      var chan = await channel.fetch();
       if (chan.type === "text" && !WHITELISTED_CHANNELS.has(chan.name)) {
-        const pinnedMessages = await chan.messages.fetchPinned();
+        var pinnedMessages = await chan.messages.fetchPinned();
         pinnedMessages.size < 1
           ? chan.send(EULAPinned).then((msg) => msg.pin())
           : noop();
@@ -72,7 +69,7 @@ client.on("ready", async () => {
 });
 
 client.on("messageReactionAdd", async (messageReaction, user) => {
-  const attempt = await shouldAttemptAuth(client, messageReaction, user);
+  var attempt = await shouldAttemptAuth(client, messageReaction, user);
   if (!attempt) return;
 
   if (BYPASS_CONFIG.has(user.id)) {
@@ -87,17 +84,17 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     message: `${user.username} has started an auth session.`,
   });
 
-  const accepted = await acceptTerms(user);
+  var accepted = await acceptTerms(user);
   if (!accepted) return;
 
   await user.send(
     "Please enter your unimelb username `user=yourusername` e.g. user=bot"
   );
 
-  const dmChan = await user.createDM();
+  var dmChan = await user.createDM();
 
   try {
-    const userResponse = await dmChan.awaitMessages(
+    var userResponse = await dmChan.awaitMessages(
       (m) => m.content.startsWith("user="),
       {
         max: 1,
@@ -106,13 +103,13 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
       }
     );
 
-    const username = userResponse.last().toString().slice(5);
-    const code = startRego(user, username);
+    var username = userResponse.last().toString().slice(5);
+    var code = startRego(user, username);
 
-    const userRoles = await getRoles(username);
-    const staff = userRoles.includes("teaching");
+    var userRoles = await getRoles(username);
+    var staff = userRoles.includes("teaching");
 
-    const sentMail = await sendMail(username, code, staff);
+    var sentMail = await sendMail(username, code, staff);
 
     logger.log({
       level: "warn",
@@ -123,7 +120,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
       "Sent verification email, please check email inbox + spam and paste the code below. You have 5 minutes :D"
     );
 
-    const enteredCode = await dmChan.awaitMessages(
+    var enteredCode = await dmChan.awaitMessages(
       (m) => m.content.startsWith(CODE_PREFIX),
       {
         max: 1,
@@ -139,7 +136,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     );
     logger.log({
       level: "error",
-      message: `unable to complete email auth user: ${JSON.stringify(user)}`,
+      message: `unable to complete email auth user: ${user.username}`,
       error: e,
     });
     return;
@@ -153,9 +150,9 @@ COURSE_ID.forEach((course) => {
 });
 
 subscriber.on("message", (channel, message) => {
-  const [course, chan] = channel.split(":");
-  const msg = JSON.parse(message);
-  const crs = toUpper(course);
+  var [course, chan] = channel.split(":");
+  var msg = JSON.parse(message);
+  var crs = toUpper(course);
   console.log("new msg ", message, channel);
 
   faultyPublish(client, chan, crs, msg, (err) =>
@@ -204,4 +201,4 @@ const hackyStuff = () => {
   matchRoles(client).then().catch(console.error);
 };
 
-setInterval(hackyStuff, 1000 * 60 * 10);
+setInterval(hackyStuff, 1000 * 10);

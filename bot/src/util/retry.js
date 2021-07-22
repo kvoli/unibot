@@ -1,3 +1,5 @@
+"use strict";
+
 export async function callAndRetry(fn, maxAmountOfRetries) {
   let error;
   for (let retries = 0; retries < maxAmountOfRetries; retries++) {
