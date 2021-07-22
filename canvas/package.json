@@ -1,0 +1,40 @@
+{
+  "name": "unibot-poller",
+  "version": "1.0.0",
+  "description": "canvas poller",
+  "main": "src/watcher.js",
+  "directories": {},
+  "type": "module",
+  "scripts": {
+    "canvas": "node src/watcher.js",
+    "start": "npm run canvas",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kvoli/unibot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kvoli/unibot/issues"
+  },
+  "homepage": "https://github.com/kvoli/unibot#readme",
+  "devDependencies": {
+    "eslint": "^7.30.0"
+  },
+  "dependencies": {
+    "@c0b41/winston-discord-transport": "^1.3.1",
+    "async-redis": "^2.0.0",
+    "dayjs": "^1.10.6",
+    "discord.js": "^12.5.3",
+    "lodash": "^4.17.21",
+    "node-canvas-api": "^1.6.9",
+    "nodemailer": "^6.6.2",
+    "redis": "^3.1.2",
+    "retry": "^0.13.1",
+    "turndown": "^7.1.1",
+    "winston": "^3.3.3"
+  }
+}
