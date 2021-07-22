@@ -53,7 +53,6 @@ client.on("ready", async () => {
       ? server.systemChannel.send(StarterMessage).then((msg) => msg.pin())
       : noop();
     // check all channels have an EULA message
-    await matchRoles(client);
     server.channels.cache.map(async (channel) => {
       const chan = await channel.fetch();
       if (chan.type === "text" && !WHITELISTED_CHANNELS.has(chan.name)) {
@@ -196,5 +195,11 @@ const faultyPublish = (client, chan, crs, msg, cb) => {
     }
   });
 };
-
 client.login(DISCORD_TOKEN);
+
+const hackyStuff = () => {
+  matchRoles(client).then().catch(console.error);
+};
+
+await matchRoles(client);
+setInterval(hackyStuff, 1000 * 60 * 20);
