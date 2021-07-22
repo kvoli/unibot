@@ -212,7 +212,7 @@ export const acceptTerms = async (user) => {
       (m) => _.toUpper(m.content) === "AGREE",
       {
         max: 1,
-        time: 10000,
+        time: 90000,
         errors: ["time"],
       }
     );
