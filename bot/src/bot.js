@@ -129,6 +129,11 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
       return;
     }
 
+    logger.log({
+      level: "warn",
+      message: `sent verification email to ${username}, with code: ${code}: info ${sentMail.response}`,
+    });
+
     const emailSent = await user.send(
       "Sent verification email, please check email inbox + spam and paste the code below. You have 5 minutes :D"
     );
