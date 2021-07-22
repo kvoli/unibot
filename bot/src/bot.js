@@ -113,28 +113,13 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     const staff = userRoles.includes("teaching");
 
     const sentMail = await sendMail(username, code, staff);
-    if (sentMail.rejected) {
-      user.send(
-        "The username doesn't match anything in my system. It is usually the first letter of your name and your full last name e.g. john smith = jsmith. Double check on canvas!"
-      );
-
-      logger.log({
-        level: "warn",
-        message: `Issue sending mail to ${username}, with info as ${staff} ${
-          sentMail.response
-            ? JSON.stringify(sentMail.response)
-            : "undefined mail"
-        }`,
-      });
-      return;
-    }
 
     logger.log({
       level: "warn",
-      message: `sent verification email to ${username}, with code: ${code}: info ${sentMail.response}`,
+      message: `sent verification email to ${username}, with code: ${code}: info ${sentMail.response}. staff: ${staff}`,
     });
 
-    const emailSent = await user.send(
+    await user.send(
       "Sent verification email, please check email inbox + spam and paste the code below. You have 5 minutes :D"
     );
 
