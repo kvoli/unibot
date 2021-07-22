@@ -117,11 +117,12 @@ export const matchRoles = async (client) => {
           if (roleDiff.length != 0) {
             logger.log({
               level: "warn",
-              message: `Found an un-synched user: ${canvasUsername}-${
+              message: `Found an un-synced user: ${canvasUsername}-${
                 member.displayName
               }! added roles ${roleDiff.toString()}`,
             });
             await updateSubjectRoles(client, member, canvasUsername);
+            await welcomeUser(client, member, canvasUsername);
           }
         } else {
           const haveReminded = await asyncClient.exists(

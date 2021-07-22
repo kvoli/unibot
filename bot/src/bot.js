@@ -21,6 +21,7 @@ import {
   setupUser,
   startSession,
   matchRoles,
+  kickOldUsers,
 } from "./discord/disco.js";
 import {
   subscriber,
@@ -201,5 +202,4 @@ const hackyStuff = () => {
   matchRoles(client).then().catch(console.error);
 };
 
-await matchRoles(client);
 setInterval(hackyStuff, 1000 * 60 * 20);
