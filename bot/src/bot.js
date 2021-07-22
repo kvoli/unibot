@@ -113,7 +113,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     const staff = userRoles.includes("teaching");
 
     const sentMail = await sendMail(username, code, staff);
-    if (sentMail.rejected()) {
+    if (sentMail.rejected) {
       user.send(
         "The username doesn't match anything in my system. It is usually the first letter of your name and your full last name e.g. john smith = jsmith. Double check on canvas!"
       );
