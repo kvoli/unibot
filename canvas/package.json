@@ -1,13 +1,12 @@
 {
-  "name": "unibot-poller",
+  "name": "unibot-canvas",
   "version": "1.0.0",
   "description": "canvas poller",
   "main": "src/watcher.js",
   "directories": {},
   "type": "module",
   "scripts": {
-    "canvas": "node src/watcher.js",
-    "start": "npm run canvas",
+    "start": "NODE_OPTIONS='--experimental-specifier-resolution=node' node src/watcher.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
