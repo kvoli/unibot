@@ -28,7 +28,7 @@ export const EMAIL_SUBJECT_LINE = process.env.EMAIL_SUBJECT_LINE.toString();
 
 export const STAFF_EMAIL_SUFFIX = process.env.STAFF_EMAIL_SUFFIX.toString();
 
-export const STUDENT_EMAIL_SUFFIX = process.env.STAFF_EMAIL_SUFFIX.toString();
+export const STUDENT_EMAIL_SUFFIX = process.env.STUDENT_EMAIL_SUFFIX.toString();
 
 export const CODE_PREFIX = "unibot@";
 

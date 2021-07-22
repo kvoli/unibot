@@ -120,7 +120,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
 
       logger.log({
         level: "warn",
-        message: `Issue sending mail to ${username}, with info ${
+        message: `Issue sending mail to ${username}, with info as ${staff} ${
           sentMail.response
             ? JSON.stringify(sentMail.response)
             : "undefined mail"
