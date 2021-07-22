@@ -11,6 +11,7 @@ import { getUpdates } from "./updates.js";
 import { getAnnouncements } from "./announcements.js";
 import { getMembers } from "./members.js";
 import { CANVAS_UPDATE_INTERVAL, COURSE_ID } from "../../config.js";
+import { logger } from "../util/logger.js";
 
 const courseMap = COURSE_ID;
 
