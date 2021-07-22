@@ -10,7 +10,7 @@ export const MAIL_ADDRESS = process.env.MAIL_ADDRESS.toString();
 
 export const MAIL_PW = process.env.MAIL_PW.toString();
 
-export const SERVER_ID = process.env.DISCORD_SERVER_ID.toString();
+export const DISCORD_SERVER_ID = process.env.DISCORD_SERVER_ID.toString();
 
 export const REDIS_HOST = process.env.REDIS_HOST.toString();
 

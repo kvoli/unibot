@@ -1,9 +1,9 @@
 "use strict";
 
-import Discord from "discord.js";
+import { Intents, Client } from "discord.js";
 import {
   DISCORD_TOKEN,
-  SERVER_ID,
+  DISCORD_SERVER_ID,
   COURSE_ID,
   CODE_PREFIX,
   WHITELISTED_CHANNELS,
@@ -20,6 +20,7 @@ import {
   completeCodeAuth,
   setupUser,
   startSession,
+  matchRoles,
 } from "./discord/disco.js";
 import {
   subscriber,
@@ -37,18 +38,22 @@ import { EULAPinned, StarterMessage } from "./discord/messages.js";
 import { logger } from "./util/logger.js";
 import retry from "retry";
 
-const client = new Discord.Client();
+const intents = new Intents([
+  Intents.NON_PRIVILEGED, // include all non-privileged intents, would be better to specify which ones you actually need
+  "GUILD_MEMBERS", // lets you request guild members (i.e. fixes the issue)
+]);
+const client = new Client({ ws: { intents } });
 
 client.on("ready", async () => {
   try {
-    const server = await client.guilds.fetch(SERVER_ID, true, true);
+    const server = await client.guilds.fetch(DISCORD_SERVER_ID, true, true);
     // check the system channel has the starter message
     const pinned = await server.systemChannel.messages.fetchPinned();
     pinned.size < 1
       ? server.systemChannel.send(StarterMessage).then((msg) => msg.pin())
       : noop();
-
     // check all channels have an EULA message
+    await matchRoles(client);
     server.channels.cache.map(async (channel) => {
       const chan = await channel.fetch();
       if (chan.type === "text" && !WHITELISTED_CHANNELS.has(chan.name)) {
@@ -77,6 +82,11 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
   }
 
   await startSession(user);
+
+  logger.log({
+    level: "info",
+    message: `${user.username} has started an auth session.`,
+  });
 
   const accepted = await acceptTerms(user);
   if (!accepted) return;
@@ -134,7 +144,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
   }
 });
 
-Object.values(COURSE_ID).map((course) => {
+COURSE_ID.forEach((course) => {
   subscriber.subscribe(DISCUSSIONS_CHANNEL(course));
   subscriber.subscribe(ANNOUNCEMENTS_CHANNEL(course));
   subscriber.subscribe(MODULES_CHANNEL(course));
@@ -144,6 +154,7 @@ subscriber.on("message", (channel, message) => {
   const [course, chan] = channel.split(":");
   const msg = JSON.parse(message);
   const crs = toUpper(course);
+  console.log("new msg ", message, channel);
 
   faultyPublish(client, chan, crs, msg, (err) =>
     logger.log({

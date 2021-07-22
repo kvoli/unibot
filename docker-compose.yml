@@ -8,16 +8,22 @@ services:
       - "6379:6379"
     volumes:
       - ./redis-volume:/data
-  unibot:
-    image: 'kvoli/unibot'
-    container_name: unibot
+  unibot-canvas:
+    image: 'kvoli/unibot-canvas'
+    container_name: unibot-canvas
+    restart: always
+    env_file:
+      - prod.env
+  unibot-disco:
+    image: 'kvoli/unibot-disco'
+    container_name: unibot-disco
     restart: always
     env_file:
       - prod.env
   watchtower:
     image: containrrr/watchtower:latest
     container_name: watchtower
-    command: unibot
+    command: unibot-disco unibot-canvas
     env_file:
       - watchtower.env
     restart: always

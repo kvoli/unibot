@@ -3,19 +3,35 @@ name: Package docker
 on: [push]
 
 jobs:
-  build-core:
+  build-disco:
     name: build and push web image
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
-        working-directory: .
-    steps: 
+        working-directory: bot/
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
       - name: Publish Image
         run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
       - name: Build the Docker image
-        run: docker build -t kvoli/unibot .
+        run: docker build -t kvoli/unibot-disco .
       - name: Push the Docker image to the registry
-        run: docker push kvoli/unibot:latest
+        run: docker push kvoli/unibot-disco:latest
+  build-canvas:
+    name: build and push web image
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: canvas/
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Publish Image
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      - name: Build the Docker image
+        run: docker build -t kvoli/unibot-canvas .
+      - name: Push the Docker image to the registry
+        run: docker push kvoli/unibot-canvas:latest
