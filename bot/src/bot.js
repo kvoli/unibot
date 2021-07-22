@@ -134,9 +134,9 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     );
     logger.log({
       level: "error",
-      message: `unable to complete email auth for unimelb username: ${username}, user: ${JSON.stringify(
-        user
-      )}`,
+      message: `unable to complete email auth for unimelb username: ${
+        username ? username : "no username given"
+      }, user: ${JSON.stringify(user)}`,
       error: e,
     });
     return;

@@ -22,6 +22,8 @@ export const WHITELISTED_CHANNELS = new Set(
   process.env.WHITELISTED_CHANNELS.toString().split(",")
 );
 
+console.log(WHITELISTED_CHANNELS);
+
 export const EMAIL_SUBJECT_LINE = process.env.EMAIL_SUBJECT_LINE.toString();
 
 export const STAFF_EMAIL_SUFFIX = process.env.STAFF_EMAIL_SUFFIX.toString();
