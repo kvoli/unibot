@@ -189,4 +189,5 @@ const hackyStuff = () => {
   matchRoles(client).then().catch(console.error);
 };
 
-setInterval(hackyStuff, 1000 * 10);
+// run every 10 mins
+setInterval(hackyStuff, 1000 * 60 * 10);
