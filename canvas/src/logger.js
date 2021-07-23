@@ -5,7 +5,7 @@ import { DISCORD_LOG_WEBHOOK } from "./config.js";
 
 var discordTransport = new DiscordTransport({
   webhook: `${DISCORD_LOG_WEBHOOK}`,
-  defaultMeta: { service: "unibot" },
+  defaultMeta: { service: "unibot-canvas" },
   level: "warn",
 });
 

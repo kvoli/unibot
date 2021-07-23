@@ -8,7 +8,7 @@ import _ from "lodash";
 import { logger } from "../util/logger.js";
 
 export const getRole = async (client, roleName) => {
-  var guild = await client.guilds.fetch(DISCORD_SERVER_ID);
+  let guild = await client.guilds.fetch(DISCORD_SERVER_ID);
   return guild.roles.cache.find((role) => role.name === roleName);
 };
 
@@ -29,14 +29,14 @@ export const getDiscordRoleNames = (discordUser) =>
     .filter((role) => role !== "@everyone");
 
 export const getFirstChannelByName = async (client, channelName) => {
-  var guild = await client.guilds.fetch(DISCORD_SERVER_ID);
+  let guild = await client.guilds.fetch(DISCORD_SERVER_ID);
   return guild.channels.cache.find((value) => {
     return value.name == channelName;
   });
 };
 
 export const getCourseChannel = async (client, course, channel) => {
-  var guild = await client.guilds.fetch(DISCORD_SERVER_ID, true, true);
+  let guild = await client.guilds.fetch(DISCORD_SERVER_ID, true, true);
   return guild.channels.cache.find(
     (value) =>
       value.type == "text" &&
@@ -47,18 +47,20 @@ export const getCourseChannel = async (client, course, channel) => {
 };
 
 export const getCanvasUserInfo = async (canvasUsername) => {
-  var userRoles = await getRoles(canvasUsername);
-  var isStaff = userRoles.includes("teaching");
-  var subject = userRoles
-    .filter((v) =>
-      isStaff ? v != "staff" && !v.endsWith("staff") : v != "student"
-    )
-    .shift();
-  if (!subject) return;
-  var rawRoles = await (isStaff
-    ? asyncClient.hget(subject, "staff")
-    : asyncClient.hget(subject, "students"));
-  var roleDb = JSON.parse(rawRoles);
+  let userRoles = await getRoles(canvasUsername);
+  let isStaff = userRoles.includes("teaching");
+
+  let subject = userRoles.filter((v) => {
+    if (isStaff) return v !== "teaching" && !v.endsWith("staff");
+    return v !== "student";
+  });
+
+  let canvasSubject = subject.shift();
+
+  let rawRoles = await (isStaff
+    ? asyncClient.hget(canvasSubject, "staff")
+    : asyncClient.hget(canvasSubject, "students"));
+  let roleDb = JSON.parse(rawRoles);
   return roleDb.filter((e) => e.user.login_id === canvasUsername).shift();
 };
 

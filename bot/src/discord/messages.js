@@ -120,9 +120,7 @@ export const WelcomeMessage = (discordUser, canvasUser) =>
     .setDescription(
       `${canvasUser.user.short_name.split(" ").shift()} (${
         canvasUser.user.login_id
-      })  just registered their canvas <-> discord account ${
-        discordUser.username
-      }`
+      })  just mapped their canvas <-> discord account ${discordUser.username}`
     );
 
 export const TOSErrorMessage =
@@ -141,4 +139,4 @@ export const KickWarningLog = (displayName) =>
   `Discord user ${displayName} has been notified that their account is currently unverified. I've double checked my records and found no mention! Account will be kicked in 1 week after joining if non-authenticated`;
 
 export const KickWarningMessage = (displayName) =>
-  `Discord user ${displayName} has been notified that their account is currently unverified. I've double checked my records and found no mention! Account will be kicked in 1 week after joining if non-authenticated.`;
+  `Hi ${displayName}, please register your canvas account on the subject discord server. Accounts will be kicked after 1 week of inactivity. You can always join back later and rety.`;

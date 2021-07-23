@@ -43,33 +43,29 @@ const client = new Client({ ws: { intents } });
 
 client.on("ready", async () => {
   try {
-    var server = await client.guilds.fetch(DISCORD_SERVER_ID, true, true);
+    let server = await client.guilds.fetch(DISCORD_SERVER_ID, true, true);
     // check the system channel has the starter message
-    var pinned = await server.systemChannel.messages.fetchPinned();
+    let pinned = await server.systemChannel.messages.fetchPinned();
     pinned.size < 1
       ? server.systemChannel.send(StarterMessage).then((msg) => msg.pin())
       : noop();
     // check all channels have an EULA message
     server.channels.cache.map(async (channel) => {
-      var chan = await channel.fetch();
+      let chan = await channel.fetch();
       if (chan.type === "text" && !WHITELISTED_CHANNELS.has(chan.name)) {
-        var pinnedMessages = await chan.messages.fetchPinned();
+        let pinnedMessages = await chan.messages.fetchPinned();
         pinnedMessages.size < 1
           ? chan.send(EULAPinned).then((msg) => msg.pin())
           : noop();
       }
     });
   } catch (e) {
-    logger.log({
-      level: "error",
-      message: "unable to update pinned messages",
-      error: e,
-    });
+    logger.error("unable to update pinned messages", e);
   }
 });
 
 client.on("messageReactionAdd", async (messageReaction, user) => {
-  var attempt = await shouldAttemptAuth(client, messageReaction, user);
+  let attempt = await shouldAttemptAuth(client, messageReaction, user);
   if (!attempt) return;
 
   if (BYPASS_CONFIG.has(user.id)) {
@@ -79,22 +75,19 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
 
   await startSession(user);
 
-  logger.log({
-    level: "info",
-    message: `${user.username} has started an auth session.`,
-  });
+  logger.info(`${user.username} has started an auth session.`);
 
-  var accepted = await acceptTerms(user);
+  let accepted = await acceptTerms(user);
   if (!accepted) return;
 
   await user.send(
-    "Please enter your unimelb username `user=yourusername` e.g. user=bot"
+    "Please enter your unimelb username `user=yourusername`,\n this should be the prefix for your email address e.g. james bond would commonly = `user=jbond`.\n This is not case sensistive."
   );
 
-  var dmChan = await user.createDM();
+  let dmChan = await user.createDM();
 
   try {
-    var userResponse = await dmChan.awaitMessages(
+    let userResponse = await dmChan.awaitMessages(
       (m) => m.content.startsWith("user="),
       {
         max: 1,
@@ -103,24 +96,23 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
       }
     );
 
-    var username = userResponse.last().toString().slice(5);
-    var code = startRego(user, username);
+    let username = userResponse.last().toString().slice(5);
+    let code = startRego(user, username);
 
-    var userRoles = await getRoles(username);
-    var staff = userRoles.includes("teaching");
+    let userRoles = await getRoles(username);
+    let staff = userRoles.includes("teaching");
 
-    var sentMail = await sendMail(username, code, staff);
+    let sentMail = await sendMail(username, code, staff);
 
-    logger.log({
-      level: "warn",
-      message: `sent verification email to ${username}, with code: ${code}: info ${sentMail.response}. staff: ${staff}`,
-    });
+    logger.warn(
+      `sent verification email to ${username}, with code: ${code}: info ${sentMail.response}. staff: ${staff}`
+    );
 
     await user.send(
       "Sent verification email, please check email inbox + spam and paste the code below. You have 5 minutes :D"
     );
 
-    var enteredCode = await dmChan.awaitMessages(
+    let enteredCode = await dmChan.awaitMessages(
       (m) => m.content.startsWith(CODE_PREFIX),
       {
         max: 1,
@@ -134,11 +126,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     user.send(
       "Sorry, you took too long to respond. Try re-reacting to the emoji."
     );
-    logger.log({
-      level: "error",
-      message: `unable to complete email auth user: ${user.username}`,
-      error: e,
-    });
+    logger.error(`unable to complete email auth user: ${user.username}`, e);
     return;
   }
 });
@@ -150,9 +138,9 @@ COURSE_ID.forEach((course) => {
 });
 
 subscriber.on("message", (channel, message) => {
-  var [course, chan] = channel.split(":");
-  var msg = JSON.parse(message);
-  var crs = toUpper(course);
+  let [course, chan] = channel.split(":");
+  let msg = JSON.parse(message);
+  let crs = toUpper(course);
   console.log("new msg ", message, channel);
 
   faultyPublish(client, chan, crs, msg, (err) =>
@@ -167,7 +155,7 @@ subscriber.on("message", (channel, message) => {
 });
 
 const faultyPublish = (client, chan, crs, msg, cb) => {
-  var operation = retry.operation();
+  let operation = retry.operation();
 
   operation.attempt(function (currentAttempt) {
     switch (chan) {

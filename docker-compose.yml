@@ -14,12 +14,22 @@ services:
     restart: always
     env_file:
       - prod.env
+    build: "canvas/"
+    links:
+      - "redis-server:redis"
+    depends_on: 
+      - "redis-server"
   unibot-disco:
     image: 'kvoli/unibot-disco'
     container_name: unibot-disco
     restart: always
     env_file:
       - prod.env
+    build: "bot/"
+    links:
+      - "redis-server:redis"
+    depends_on: 
+      - "redis-server"
   watchtower:
     image: containrrr/watchtower:latest
     container_name: watchtower

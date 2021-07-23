@@ -56,14 +56,11 @@ export const welcomeUser = async (client, discordUser, canvasUsername) => {
   try {
     let canvasUser = await getCanvasUserInfo(canvasUsername);
     let welcomeChannel = await getFirstChannelByName(client, "welcome");
-    console.log(canvasUser);
-    console.log(discordUser);
-    console.log(discordUser.user);
-    welcomeChannel.send(WelcomeMessage(discordUser.user, canvasUser));
+    welcomeChannel.send(WelcomeMessage(discordUser, canvasUser));
   } catch (e) {
     logger.log({
       level: "error",
-      message: `error welcoming new user ${discordUser.user.username}, err: ${e}`,
+      message: `error welcoming new user ${discordUser.username}`,
       error: e,
     });
   }
@@ -103,7 +100,7 @@ const updateSubjectRoles = async (client, user, username) => {
 export const acceptTerms = async (user) => {
   try {
     await user.send(EULA);
-    var dmChan = await user.createDM();
+    let dmChan = await user.createDM();
     await dmChan.awaitMessages((m) => _.toUpper(m.content) === "AGREE", {
       max: 1,
       time: 90000,
@@ -143,8 +140,7 @@ export const matchRoles = async (client) => {
                 member.displayName
               }! added roles ${roleDiff.toString()}`
             );
-            await updateSubjectRoles(client, member, canvasUsername);
-            await welcomeUser(client, member, canvasUsername);
+            setupUser(client, member.user, canvasUsername);
           }
         } else {
           let haveReminded = await asyncClient.exists(
