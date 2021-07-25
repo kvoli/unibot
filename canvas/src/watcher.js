@@ -53,47 +53,46 @@ const pubMembers = async (courseId) => {
 
 const pubUpdates = async (courseId) => {
   const { modules, discussions } = await getUpdates(courseId);
+  console.log("Got updates", modules, discussions);
   modules
-    ? modules.map((module) =>
-        module.items.map((moduleItem) => {
-          publisher.hexists(
-            `${courseMap[courseId]}-modules`,
-            moduleItem.id.toString(),
-            (err, reply) => {
-              if (!err && reply == 0) {
-                publisher.hset(
-                  `${courseMap[courseId]}-modules`,
-                  moduleItem.id.toString(),
-                  JSON.stringify(moduleItem)
-                );
-                publisher.publish(
-                  MODULES_CHANNEL(courseMap[courseId]),
-                  JSON.stringify(moduleItem),
-                  (err, reply) =>
-                    console.log(
-                      "published moduleItem on",
-                      MODULES_CHANNEL(courseMap[courseId]),
-                      err,
-                      reply,
-                      JSON.stringify(moduleItem).length
-                    )
-                );
-              }
+    ? modules.map((moduleItem) =>
+        publisher.hexists(
+          `${courseId}-modules`,
+          moduleItem.id.toString(),
+          (err, reply) => {
+            if (!err && reply == 0) {
+              publisher.hset(
+                `${courseId}-modules`,
+                moduleItem.id.toString(),
+                JSON.stringify(moduleItem)
+              );
+              publisher.publish(
+                MODULES_CHANNEL(courseMap[courseId]),
+                JSON.stringify(moduleItem),
+                (err, reply) =>
+                  console.log(
+                    "published moduleItem on",
+                    MODULES_CHANNEL(courseMap[courseId]),
+                    err,
+                    reply,
+                    JSON.stringify(moduleItem).length
+                  )
+              );
             }
-          );
-        })
+          }
+        )
       )
     : _.noop();
   discussions
     ? discussions.map((disc) =>
         disc.map((post) =>
           publisher.hexists(
-            `${courseMap[courseId]}-posts`,
+            `${courseId}-posts`,
             post.id.toString(),
             (err, reply) => {
               if (!err && reply == 0) {
                 publisher.hset(
-                  `${courseMap[courseId]}-posts`,
+                  `${courseId}-posts`,
                   post.id.toString(),
                   JSON.stringify(post)
                 );

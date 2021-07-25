@@ -7,6 +7,7 @@ import {
   getDiscussionTopics,
   getFullDiscussion,
 } from "node-canvas-api";
+import getFile from "node-canvas-api/src/getFile";
 import { WHITELISTED_MODULE_TYPES } from "./config.js";
 import { shouldPublish } from "./util.js";
 
@@ -15,16 +16,24 @@ export const getUpdates = async (courseId) => {
     courseId,
     getOptions.module.include.items
   );
+
   const discussions = await getDiscussionDetails(courseId);
 
-  const modules = allModules.filter(
-    (m) =>
-      shouldPublish(m.published, m.unlock_at) &&
-      WHITELISTED_MODULE_TYPES.has(m.type)
-  );
+  const unmappedModules = filterModuleTypes(allModules);
+  const modules = await getFiles(unmappedModules);
 
   return { modules, discussions };
 };
+
+const filterModuleTypes = (modules) =>
+  modules.flatMap((module) =>
+    module.items
+      .map((moduleItem) => Object.assign({ parent: module.name }, moduleItem))
+      .filter(
+        (moduleItem) =>
+          WHITELISTED_MODULE_TYPES.has(moduleItem.type) && moduleItem.published
+      )
+  );
 
 const getDiscussionDetails = async (courseId) => {
   const discussions = await getDiscussionTopics(courseId);
@@ -67,4 +76,15 @@ const parseMessage = (post, authors, title, url) => {
     ret,
     _.flatMapDeep(post.replies, (p) => parseMessage(p, authors, title, url))
   );
+};
+
+const getFiles = async (moduleItems) => {
+  let ret = await Promise.all(
+    moduleItems.map(async (item) => {
+      if (item.type !== "File") return item;
+      let file = await getFile(item.content_id);
+      return Object.assign({ file: file.url, filename: file.filename }, item);
+    })
+  );
+  return ret;
 };
