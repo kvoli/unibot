@@ -1,4 +1,5 @@
 import Discord from "discord.js";
+import _ from "lodash";
 import TurndownService from "turndown";
 
 const turndownService = new TurndownService();
@@ -80,8 +81,20 @@ export const ModuleMessage = (message) =>
     .setURL(
       message.type == "ExternalUrl" ? message.external_url : message.html_url
     )
-    .setTitle(`Canvas Update: ${message.type}`)
+    .setTitle(`${message.parent}: new ${message.type}`)
     .setDescription(message.title);
+
+export const ModuleFileMessage = (message) =>
+  new Discord.MessageEmbed()
+    .setAuthor(
+      "Canvas",
+      "https://cpb-ap-se2.wpmucdn.com/blogs.unimelb.edu.au/dist/6/275/files/2017/09/04_Logo_Vertical-Housed-1abdv7t.jpg"
+    )
+    .setColor("#08c96b")
+    .setURL(message.html_url)
+    .setTitle(`${message.parent}: new ${message.type}`)
+    .setDescription(message.title)
+    .attachFiles([{ attachment: message.file, name: message.filename }]);
 
 export const EULA = new Discord.MessageEmbed()
   .setAuthor(

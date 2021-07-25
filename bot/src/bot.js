@@ -33,6 +33,7 @@ import {
   publishAnnouncement,
   publishModule,
   publishDiscussion,
+  publishFileModule,
 } from "./discord/pub.js";
 import { EULAPinned, StarterMessage } from "./discord/messages.js";
 import { logger } from "./util/logger.js";
@@ -155,7 +156,7 @@ subscriber.on("message", (channel, message) => {
 });
 
 const faultyPublish = (client, chan, crs, msg, cb) => {
-  let operation = retry.operation();
+  let operation = retry.operation({ retries: 1 });
 
   operation.attempt(function (currentAttempt) {
     switch (chan) {
@@ -167,10 +168,17 @@ const faultyPublish = (client, chan, crs, msg, cb) => {
         break;
       }
       case "MODULES_CHANNEL": {
-        publishModule(client, crs, msg, function (err) {
-          if (operation.retry(err)) return;
-          cb(err ? operation.mainError() : null);
-        });
+        if (msg.type == "File") {
+          publishFileModule(client, crs, msg, function (err) {
+            if (operation.retry(err)) return;
+            cb(err ? operation.mainError() : null);
+          });
+        } else {
+          publishModule(client, crs, msg, function (err) {
+            if (operation.retry(err)) return;
+            cb(err ? operation.mainError() : null);
+          });
+        }
         break;
       }
       case "ANNOUNCEMENTS_CHANNEL": {
