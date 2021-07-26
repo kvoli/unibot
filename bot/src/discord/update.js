@@ -44,9 +44,10 @@ export const startRego = (user, username) => {
 };
 
 export const setupUser = async (client, discordUser, canvasUsername) => {
-  await updateSubjectRoles(client, discordUser, canvasUsername);
-  await setUser(discordUser, canvasUsername);
-  await welcomeUser(client, discordUser, canvasUsername);
+  let forceLowername = _.toLower(canvasUsername);
+  await updateSubjectRoles(client, discordUser, forceLowername);
+  await setUser(discordUser, forceLowername);
+  await welcomeUser(client, discordUser, forceLowername);
   discordUser.send(
     "I've checked your assigned roles and updated my mapping. Check back to the server."
   );

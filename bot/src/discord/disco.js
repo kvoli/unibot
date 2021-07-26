@@ -13,7 +13,7 @@ export const getRole = async (client, roleName) => {
 };
 
 export const getRoles = async (username) =>
-  await asyncClient.smembers(username);
+  await asyncClient.smembers(_.toLower(username));
 
 export const getRego = async (userId) =>
   await asyncClient.get(`inprog:${userId}`);
@@ -47,7 +47,7 @@ export const getCourseChannel = async (client, course, channel) => {
 };
 
 export const getCanvasUserInfo = async (canvasUsername) => {
-  let userRoles = await getRoles(canvasUsername);
+  let userRoles = await getRoles(_.toLower(canvasUsername));
   let isStaff = userRoles.includes("teaching");
 
   let subject = userRoles.filter((v) => {
