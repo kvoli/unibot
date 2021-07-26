@@ -156,7 +156,7 @@ subscriber.on("message", (channel, message) => {
 });
 
 const faultyPublish = (client, chan, crs, msg, cb) => {
-  let operation = retry.operation({ retries: 1 });
+  let operation = retry.operation({ retries: 10 });
 
   operation.attempt(function (currentAttempt) {
     switch (chan) {

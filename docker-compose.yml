@@ -19,6 +19,7 @@ services:
       - "redis-server:redis"
     depends_on: 
       - "redis-server"
+      - "unibot-disco"
   unibot-disco:
     image: 'kvoli/unibot-disco'
     container_name: unibot-disco

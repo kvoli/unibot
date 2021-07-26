@@ -53,7 +53,6 @@ const pubMembers = async (courseId) => {
 
 const pubUpdates = async (courseId) => {
   const { modules, discussions } = await getUpdates(courseId);
-  console.log("Got updates", modules, discussions);
   modules
     ? modules.map((moduleItem) =>
         publisher.hexists(
