@@ -134,6 +134,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
 
 COURSE_ID.forEach((course) => {
   subscriber.subscribe(DISCUSSIONS_CHANNEL(course));
+  console.log("LISTENING TO MODULES_CHANNEL", MODULES_CHANNEL(course));
   subscriber.subscribe(ANNOUNCEMENTS_CHANNEL(course));
   subscriber.subscribe(MODULES_CHANNEL(course));
 });
